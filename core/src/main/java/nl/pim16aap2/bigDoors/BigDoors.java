@@ -46,12 +46,6 @@ public class BigDoors extends JavaPlugin implements Listener
 
     public static final int MINIMUMDOORDELAY = 15;
 
-    private static final Set<String> BLACKLISTED_SERVERS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-        "CatServer", "Mohist", "Magma", "Glowstone", "Akarin", "ArcLight")));
-
-    private static final List<String> BLACKLISTED_PLUGINS = Collections.unmodifiableList(new ArrayList<>(Arrays.asList(
-        "Geyser-Spigot", "ViaRewind")));
-
     private ToolVerifier tf;
     private SQLiteJDBCDriverConnection db;
     private FallingBlockFactory fabf;
@@ -141,23 +135,6 @@ public class BigDoors extends JavaPlugin implements Listener
 
         messages = new Messages(this);
 
-        final Optional<String> disableReason = isCurrentEnvironmentInvalid();
-        if (disableReason.isPresent())
-        {
-            if (!getConfigLoader().unsafeMode())
-            {
-                String error = "Running in an invalid environment: '"
-                    + disableReason.get() +
-                    "'. This can be bypassed in the config if you are feeling adventurous (unsafeMode).";
-                setDisabled(error);
-                logger.logMessage(error, true, true);
-                return;
-            }
-            else if (config.unsafeModeNotification())
-                loginMessages.add("You are trying to load this plugin in an unsupported environment: '"
-                                      + disableReason.get() + "'. This may cause issues!");
-        }
-
         logger.logMessageToLogFile("Starting BigDoors version: " + getDescription().getVersion());
         try
         {
@@ -233,30 +210,9 @@ public class BigDoors extends JavaPlugin implements Listener
             throw new IllegalStateException("Scheduler is not running!");
     }
 
-    /**
-     * Checks if the current environment is invalid. This plugin should not attempt initialization in an invalid
-     * environment.
-     * <p>
-     * Note that it doesn't check if the version is valid.
-     *
-     * @return The name of the invalid environment, if one could be found.
-     */
-    private Optional<String> isCurrentEnvironmentInvalid()
-    {
-        for (final String pluginName : BLACKLISTED_PLUGINS)
-            if (getServer().getPluginManager().getPlugin(pluginName) != null)
-                return Optional.of(pluginName);
-
-        if (BigDoors.BLACKLISTED_SERVERS.contains(Bukkit.getName()))
-            return Optional.of(Bukkit.getName());
-
-        return Optional.empty();
-    }
-
     private void registerCommands(CommandExecutor commandExecutor)
     {
         getCommand("recalculatepowerblocks").setExecutor(commandExecutor);
-        getCommand("killbigdoorsentities").setExecutor(commandExecutor);
         getCommand("inspectpowerblockloc").setExecutor(commandExecutor);
         getCommand("changepowerblockloc").setExecutor(commandExecutor);
         getCommand("setautoclosetime").setExecutor(commandExecutor);

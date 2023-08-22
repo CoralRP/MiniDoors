@@ -23,8 +23,8 @@ public class GUI
     private static final Material UNLOCKDOORMAT = XMaterial.RED_STAINED_GLASS_PANE.parseMaterial();
     private static final Material CONFIRMMAT = XMaterial.RED_STAINED_GLASS_PANE.parseMaterial();
     private static final Material NOTCONFIRMMAT = XMaterial.GREEN_STAINED_GLASS_PANE.parseMaterial();
-    private static final Material TOGGLEDOORMAT = Material.LEVER;
     private static final Material INFOMAT = Material.BOOKSHELF;
+    private static final Material TOGGLEDOORMAT = Material.LEVER;
     private static final Material DELDOORMAT = Material.BARRIER;
     private static final Material RELOCATEPBMAT = Material.LEATHER_BOOTS;
     private static final Material SETOPENDIRMAT = Material.COMPASS;
@@ -50,7 +50,7 @@ public class GUI
         }
         else
         {
-            DOORTYPES[0] = XMaterial.OAK_DOOR.parseMaterial(); // Door
+            DOORTYPES[0] = XMaterial.JUNGLE_DOOR.parseMaterial(); // Door
             DOORTYPES[1] = XMaterial.OAK_TRAPDOOR.parseMaterial(); // DrawBridge
             DOORTYPES[2] = XMaterial.IRON_DOOR.parseMaterial(); // Portcullis
             DOORTYPES[3] = XMaterial.PISTON.parseMaterial(); // Sliding Door
@@ -69,14 +69,12 @@ public class GUI
     private PageType pageType;
     private int page;
     private final ArrayList<Door> doors;
-    private boolean sortAlphabetically = false;
     private Inventory inventory = null;
     private final Map<Integer, GUIItem> items;
     private int maxPageCount;
     private Door door = null;
 
-    public GUI(BigDoors plugin, Player player)
-    {
+    public GUI(BigDoors plugin, Player player) {
         missingHeadTextures = 0;
         this.plugin = plugin;
         messages = plugin.getMessages();
@@ -87,8 +85,6 @@ public class GUI
         items = new HashMap<>();
 
         doors = plugin.getCommander().getDoors();
-
-        sort();
         update();
     }
 
@@ -115,7 +111,6 @@ public class GUI
         }
         else if (pageType == PageType.DOORLIST || pageType == PageType.DOORCREATION)
         {
-            System.out.println("STO RIEMPIENDO LE PORTE");
             fillDefaultHeader();
             fillDoors();
         }
@@ -146,11 +141,6 @@ public class GUI
             items.put(0, new GUIItem(PAGESWITCHMAT, messages.getString("GUI.PreviousPage"), lore, page));
             lore.clear();
         }
-
-        addLore(lore, sortAlphabetically ? messages.getString("GUI.SORTED.Alphabetically") :
-            messages.getString("GUI.SORTED.Numerically"));
-        items.put(1, new GUIItem(TOGGLEDOORMAT, messages.getString("GUI.SORTED.Change"), lore, 1));
-        lore.clear();
 
         addCreationBook(DoorType.DRAWBRIDGE, 3, "GUI.NewDrawbridge");
         addCreationBook(DoorType.DOOR, 4, "GUI.NewDoor");
@@ -229,8 +219,15 @@ public class GUI
                                 false);
                 continue;
             }
-            addLore(lore, messages.getString("GUI.DoorHasID") + doors.get(realIdx).getDoorUID());
-            addLore(lore, messages.getString(DoorType.getNameKey(doorType)));
+
+            addLore(lore, "");
+            addLore(lore, "§7ID Porta: §f" + doors.get(realIdx).getDoorUID());
+            addLore(lore, "§7Tipo Porta: §f" + doorType.name());
+            addLore(lore, "§7Mondo: §f" + doors.get(realIdx).getWorld().getName());
+            addLore(lore, "§7Posizione: §f" + doors.get(realIdx).getMaximum().getBlockX() + ", " +
+                doors.get(realIdx).getMaximum().getBlockY() + ", " + doors.get(realIdx).getMaximum().getBlockZ());
+            addLore(lore, "");
+            addLore(lore, "§eᴄʟɪᴄᴋ ᴅᴇsᴛʀᴏ ᴘᴇʀ ᴘɪᴜ' ɪɴꜰᴏʀᴍᴀᴢɪᴏɴɪ");
             GUIItem item = new GUIItem(DOORTYPES[DoorType.getValue(doorType)], doors.get(realIdx).getName(), lore, 1);
             item.setDoor(doors.get(realIdx));
             items.put(idx + 9, item);
@@ -338,12 +335,6 @@ public class GUI
             --page;
             update();
         }
-        else if (interactionIDX == 1)
-        {
-            sortAlphabetically = !sortAlphabetically;
-            sort();
-            update();
-        }
         else if (interactionIDX == 8)
         {
             ++page;
@@ -375,14 +366,6 @@ public class GUI
             pageType = PageType.DOORINFO;
             update();
         }
-    }
-
-    private void sort()
-    {
-        if (sortAlphabetically)
-            Collections.sort(doors, Comparator.comparing(Door::getName));
-        else
-            Collections.sort(doors, Comparator.comparing(Door::getDoorUID));
     }
 
     private GUIItem getGUIItem(Door door, DoorAttribute atr) {
