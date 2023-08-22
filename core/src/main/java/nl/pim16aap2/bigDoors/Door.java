@@ -19,36 +19,31 @@ public class Door
     private World               world;
     private boolean            isOpen;
     private Location           engine;
-    private UUID               player;
     private final long        doorUID;
     private RotateDirection   openDir;
     private boolean          isLocked;
     private int             autoClose;
     private DoorDirection  engineSide;
-    private String         playerName;
     private Location       powerBlock;
     private Integer     roundedLength;
     private int            permission;
     private Location         chunkLoc;
     private Integer            length;
-    private UUID primeOwner;
     private boolean notify;
 
     private Integer blockCount = null;
     private int      blocksToMove = 0;
 
     // Generate a new door.
-    public Door(UUID player, String playerName, UUID primeOwner, World world, Location min, Location max, Location engine, String name, boolean isOpen, long doorUID,
+    public Door(World world, Location min, Location max, Location engine, String name, boolean isOpen, long doorUID,
                 boolean isLocked, int permission, DoorType type, DoorDirection engineSide, Location powerBlock,
                 RotateDirection openDir, int autoClose, boolean notify)
     {
-        this.player     = player;
         this.world      = world;
         this.min        = min;
         this.max        = max;
         this.engine     = engine;
         this.powerBlock = powerBlock;
-        this.playerName = playerName;
         this.name       = name;
         this.isOpen     = isOpen;
         this.doorUID    = doorUID;
@@ -61,34 +56,15 @@ public class Door
         roundedLength   = null;
         this.openDir    = openDir == null ? RotateDirection.NONE : openDir;
         this.autoClose  = autoClose;
-        this.primeOwner = primeOwner;
         this.notify     = notify;
     }
 
-    public Door(UUID player, String playerName, UUID primeOwner, World world, Location min, Location max, Location engine, String name,
-                boolean isOpen, long doorUID, boolean isLocked, int permission, DoorType type,
-                Location powerBlock, RotateDirection openDir, int autoClose, boolean notify)
-    {
-        this(player, playerName, primeOwner, world, min, max, engine, name, isOpen, doorUID, isLocked, permission, type, null,
-             powerBlock, openDir, autoClose, notify);
-    }
-
-    // Create a door with a player UUID string instead of player Object.
     public Door(World world, Location min, Location max, Location engine, String name, boolean isOpen,
-                long doorUID, boolean isLocked, int permission, String player, String playerName, UUID primeOwner, DoorType type, Location powerBlock,
+                long doorUID, boolean isLocked, int permission, DoorType type, Location powerBlock,
                 RotateDirection openDir, int autoClose, boolean notify)
     {
-        this(UUID.fromString(player), playerName, primeOwner, world, min, max, engine, name, isOpen,
+        this(world, min, max, engine, name, isOpen,
              doorUID, isLocked, permission, type, null, powerBlock, openDir, autoClose, notify);
-    }
-
-    // Create a door with a player UUID string instead of player Object and an engineSide (for draw bridges).
-    public Door(World world, Location min, Location max, Location engine, String name, boolean isOpen,
-                long doorUID, boolean isLocked, int permission, String player, String playerName, UUID primeOwner, DoorType type,
-                DoorDirection engineSide, Location powerBlock, RotateDirection openDir, int autoClose, boolean notify)
-    {
-        this(UUID.fromString(player), playerName, primeOwner, world, min, max, engine, name, isOpen, doorUID, isLocked, permission,
-             type, engineSide, powerBlock, openDir, autoClose, notify);
     }
 
     // ------------------------ SIMPLE GETTERS -------------------- //
@@ -109,8 +85,6 @@ public class Door
     public boolean isLocked()           {  return isLocked;      }  // Check if this door is locked or not.
     public boolean isOpen()             {  return isOpen;        }  // Check if this door is in the open or closed state.
     public int getPermission()          {  return permission;    }  // Check permission level of current owner.
-    public UUID getPlayerUUID()         {  return player;        }  // Get UUID of the owner of the door. Might be null!
-    public String getPlayerName()       {  return playerName;    }  // Get name of the owner of the door. Might be null!
     public DoorDirection getEngSide()   {  return engineSide;    }  // Get this door's (or drawbridge's, in this case) engine side.
     public RotateDirection getOpenDir() {  return openDir;       }  // Get the open direction of this door.
     public int getAutoClose()           {  return autoClose;     }  // Get the auto close time.
@@ -124,16 +98,6 @@ public class Door
     public void setNotificationEnabled(boolean notify)
     {
         this.notify = notify;
-    }
-
-    public UUID getPrimeOwner()
-    {
-        return this.primeOwner;
-    }
-
-    public void setPlayerUUID(UUID playerUUID)
-    {
-        player = playerUUID;
     }
 
     public void setOpenDir(RotateDirection newRotDir)
@@ -311,7 +275,7 @@ public class Door
     public String toString()
     {
         String ret = "";
-        ret += "\"" + name + "\". Owned by \"" + player.toString() + "\" (" + getPermission() + ")\n";
+        ret += "\"" + name + "\"\n";
         ret += "Max = " + Util.locIntToString(max) + ", min = " + Util.locIntToString(min) + "\n";
         ret += "Eng = " + Util.locIntToString(engine) + ", locked = " + isLocked + ", open = " + isOpen + "\n";
         ret += "blockCount = " + getBlockCount() + ", hash = " + getPowerBlockChunkHash();

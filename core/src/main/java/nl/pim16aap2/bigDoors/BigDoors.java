@@ -125,8 +125,6 @@ public class BigDoors extends JavaPlugin implements Listener
     private ProtectionCompatManager protCompatMan;
     private @Nullable LoginResourcePackHandler rPackHandler;
     private TimedCache<Long /* Chunk */, HashMap<Long /* Loc */, Long /* doorUID */>> pbCache = null;
-    private VaultManager vaultManager;
-    private UpdateManager updateManager;
     private volatile boolean schedulerIsRunning = false;
     private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
     private static final boolean IS_ON_FLATTENED_VERSION = MC_VERSION.isAtLeast(MCVersion.v1_13_R1);
@@ -163,7 +161,6 @@ public class BigDoors extends JavaPlugin implements Listener
         if (!schedulerIsRunning)
             Bukkit.getScheduler().runTask(this, () -> schedulerIsRunning = true);
 
-        updateManager = new UpdateManager(this);
         buildNumber = readBuildNumber();
         overrideVersion();
 
@@ -190,8 +187,6 @@ public class BigDoors extends JavaPlugin implements Listener
             getMyLogger().logMessage(Level.SEVERE, Util.throwableToString(e));
             return;
         }
-
-        updateManager.setEnabled(getConfigLoader().autoDLUpdate(), getConfigLoader().announceUpdateCheck());
 
         messages = new Messages(this);
 
@@ -245,7 +240,6 @@ public class BigDoors extends JavaPlugin implements Listener
 
         init();
 
-        vaultManager = new VaultManager(this);
         autoCloseScheduler = new AutoCloseScheduler(this);
 
         Bukkit.getPluginManager().registerEvents(new EventHandlers(this), this);
@@ -409,8 +403,6 @@ public class BigDoors extends JavaPlugin implements Listener
                           "Stats disabled, not laoding stats :(... Please consider enabling it! I am a simple man, seeing higher user numbers helps me stay motivated!");
         }
 
-        updateManager.setEnabled(getConfigLoader().autoDLUpdate(), getConfigLoader().announceUpdateCheck());
-
         if (commander != null)
             commander.setCanGo(true);
     }
@@ -515,8 +507,6 @@ public class BigDoors extends JavaPlugin implements Listener
         }
 
         init();
-
-        vaultManager.init();
         pbCache.reinit(config.cacheTimeout());
     }
 
@@ -573,29 +563,6 @@ public class BigDoors extends JavaPlugin implements Listener
                 output.put(DoorType.getFriendlyName(type), stats.getOrDefault(type, 0));
             return output;
         }));
-    }
-
-    public String getLoginMessage()
-    {
-        final StringBuilder sb = new StringBuilder();
-        if (updateManager.updateAvailable())
-        {
-            if (getConfigLoader().autoDLUpdate() && updateManager.hasUpdateBeenDownloaded())
-                sb.append("[BigDoors] A new update (").append(updateManager.getNewestVersion())
-                  .append(") has been downloaded! ").append("Restart your server to apply the update!\n");
-            else if (updateManager.updateAvailable())
-                sb.append("[BigDoors] A new update is available: ").append(updateManager.getNewestVersion())
-                  .append("\n");
-        }
-        if (failureCommandHandler != null)
-            sb.append("[BigDoors] ").append(failureCommandHandler.getError()).append("\n");
-        loginMessages.forEach(str -> sb.append("[BigDoors] ").append(str).append("\n"));
-        return sb.toString();
-    }
-
-    public UpdateManager getUpdateManager()
-    {
-        return updateManager;
     }
 
     public TimedCache<Long, HashMap<Long, Long>> getPBCache()
@@ -713,11 +680,6 @@ public class BigDoors extends JavaPlugin implements Listener
     public ConfigLoader getConfigLoader()
     {
         return config;
-    }
-
-    public VaultManager getVaultManager()
-    {
-        return vaultManager;
     }
 
     // Get the ToolVerifier.

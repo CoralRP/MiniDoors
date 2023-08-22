@@ -5,7 +5,6 @@ import nl.pim16aap2.bigDoors.moveBlocks.BlockMover;
 import nl.pim16aap2.bigDoors.storage.sqlite.SQLiteJDBCDriverConnection;
 import nl.pim16aap2.bigDoors.util.DoorAttribute;
 import nl.pim16aap2.bigDoors.util.DoorDirection;
-import nl.pim16aap2.bigDoors.util.DoorOwner;
 import nl.pim16aap2.bigDoors.util.Messages;
 import nl.pim16aap2.bigDoors.util.RotateDirection;
 import nl.pim16aap2.bigDoors.util.Util;
@@ -200,20 +199,11 @@ public class Commander
         return db.insert(newDoor);
     }
 
-    public long addDoor(Door newDoor, Player player, int permission)
-    {
-        if (newDoor.getPlayerUUID() != player.getUniqueId())
-            newDoor.setPlayerUUID(player.getUniqueId());
+    public long addDoor(Door newDoor, int permission) {
         if (newDoor.getPermission() != permission)
             newDoor.setPermission(permission);
         plugin.getPBCache().invalidate(Util.chunkHashFromLocation(newDoor.getPowerBlockLoc()));
         return db.insert(newDoor);
-    }
-
-    // Add a door to the db of doors.
-    public long addDoor(Door newDoor, Player player)
-    {
-        return addDoor(newDoor, player, 0);
     }
 
     private void onDoorDelete(@Nullable Door door)
@@ -223,8 +213,6 @@ public class Commander
 
         Bukkit.getPluginManager().callEvent(new DoorDeleteEvent(door));
         plugin.getPBCache().invalidate(door.getPowerBlockChunkHash());
-        if (plugin.getConfigLoader().refundOnDelete())
-            plugin.getVaultManager().refundDoor(door);
     }
 
     public boolean removeDoor(Player player, long doorUID)
@@ -393,44 +381,11 @@ public class Commander
 
     // Update the coordinates of a given door.
     public void updateDoorCoords(long doorUID, boolean isOpen, int blockXMin, int blockYMin, int blockZMin,
-                                 int blockXMax, int blockYMax, int blockZMax, DoorDirection newEngSide)
-    {
+                                 int blockXMax, int blockYMax, int blockZMax, DoorDirection newEngSide) {
         db.updateDoorCoords(doorUID, isOpen, blockXMin, blockYMin, blockZMin, blockXMax, blockYMax, blockZMax,
-                            newEngSide);
+                newEngSide);
     }
 
-    public void addOwner(UUID playerUUID, Door door)
-    {
-        addOwner(playerUUID, door, 1);
-    }
-
-    public boolean addOwner(UUID playerUUID, Door door, int permission)
-    {
-        if (permission < 1 || permission > 2 || door.getPermission() != 0 || door.getPlayerUUID().equals(playerUUID))
-            return false;
-
-        db.addOwner(door.getDoorUID(), playerUUID, permission);
-        return true;
-    }
-
-    public boolean removeOwner(Door door, UUID playerUUID, Player executor)
-    {
-        return removeOwner(door.getDoorUID(), playerUUID, executor);
-    }
-
-    public boolean removeOwner(long doorUID, UUID playerUUID, Player executor)
-    {
-        if (db.getPermission(playerUUID.toString(), doorUID) == 0)
-            return false;
-        if (!hasPermissionForAction(executor, doorUID, DoorAttribute.REMOVEOWNER))
-            return false;
-        return db.removeOwner(doorUID, playerUUID);
-    }
-
-    public ArrayList<DoorOwner> getDoorOwners(long doorUID, @Nullable UUID playerUUID)
-    {
-        return db.getOwnersOfDoor(doorUID, playerUUID);
-    }
 
     public void updateDoorOpenDirection(long doorUID, RotateDirection openDir)
     {
