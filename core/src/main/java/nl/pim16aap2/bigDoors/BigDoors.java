@@ -39,7 +39,6 @@ import java.util.logging.Level;
 public class BigDoors extends JavaPlugin implements Listener
 {
     private static BigDoors instance;
-    public static final boolean DEVBUILD = true;
     private int buildNumber = -1;
 
     private static final String PACKAGE_VERSION = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
@@ -52,7 +51,6 @@ public class BigDoors extends JavaPlugin implements Listener
     private ConfigLoader config;
     private String locale;
     private final MyLogger logger;
-    private final File logFile;
     private Metrics metrics;
     private Messages messages;
     private Commander commander = null;
@@ -74,14 +72,12 @@ public class BigDoors extends JavaPlugin implements Listener
     private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
     private static final boolean IS_ON_FLATTENED_VERSION = MC_VERSION.isAtLeast(MCVersion.v1_13_R1);
     private boolean isEnabled = false;
-    private final List<String> loginMessages = new ArrayList<>();
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
 
     public BigDoors()
     {
         instance = this;
-        logFile = new File(getDataFolder(), "log.txt");
-        logger = new MyLogger(this, logFile);
+        logger = new MyLogger(this);
         initLegacyMaterials();
     }
 
