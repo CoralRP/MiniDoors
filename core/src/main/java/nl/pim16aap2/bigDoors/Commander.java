@@ -168,7 +168,7 @@ public class Commander
         }
 
         Long doorUID = powerBlockData.get(Util.locationHash(loc));
-        return doorUID == null ? null : db.getDoor(null, doorUID);
+        return doorUID == null ? null : db.getDoor(doorUID);
     }
 
     public void recalculatePowerBlockHashes() {
@@ -176,7 +176,7 @@ public class Commander
     }
 
     public void updatePowerBlockLoc(long doorUID, Location loc) {
-        plugin.getPBCache().invalidate(db.getDoor(null, doorUID).getPowerBlockChunkHash());
+        plugin.getPBCache().invalidate(db.getDoor(doorUID).getPowerBlockChunkHash());
         db.updateDoorPowerBlockLoc(doorUID, loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getUID());
         plugin.getPBCache().invalidate(Util.chunkHashFromLocation(loc));
     }
