@@ -66,7 +66,6 @@ public class BigDoors extends JavaPlugin implements Listener
     private HashMap<UUID, GUI> playerGUIs;
     private HashMap<UUID, WaitForCommand> cmdWaiters;
     private AutoCloseScheduler autoCloseScheduler;
-    private @Nullable LoginResourcePackHandler rPackHandler;
     private TimedCache<Long /* Chunk */, HashMap<Long /* Loc */, Long /* doorUID */>> pbCache = null;
     private volatile boolean schedulerIsRunning = false;
     private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
@@ -274,14 +273,6 @@ public class BigDoors extends JavaPlugin implements Listener
             Bukkit.getPluginManager().registerEvents(redstoneHandler, this);
         }
 
-        if (config.resourcePackEnabled())
-        {
-            // If a resource pack was set for the current version of Minecraft, send that
-            // pack to the client on login.
-            rPackHandler = new LoginResourcePackHandler(this, config.resourcePack());
-            Bukkit.getPluginManager().registerEvents(rPackHandler, this);
-        }
-
         // Load stats collector if allowed, otherwise unload it if needed or simply
         // don't load it in the first place.
         if (config.allowStats())
@@ -373,11 +364,6 @@ public class BigDoors extends JavaPlugin implements Listener
         {
             HandlerList.unregisterAll(redstoneHandler);
             redstoneHandler = null;
-        }
-        if (rPackHandler != null)
-        {
-            HandlerList.unregisterAll(rPackHandler);
-            rPackHandler = null;
         }
 
         init();
