@@ -40,7 +40,7 @@ public class DrawbridgeCreator extends ToolUser
     @Override
     protected void triggerFinishUp()
     {
-        finishUp(messages.getString("CREATOR.DRAWBRIDGE.Success"));
+        finishUp(player, messages.getString("CREATOR.DRAWBRIDGE.Success"));
     }
 
     @Override
@@ -214,9 +214,9 @@ public class DrawbridgeCreator extends ToolUser
         return xDepth != 0 ^ zDepth != 0;
     }
 
-    private void selector(Location loc, @Nullable String canBreakBlock)
+    private void selector(Location loc, @Nullable boolean canBreakBlock)
     {
-        if (canBreakBlock != null)
+        if (!canBreakBlock)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
             return;
@@ -291,7 +291,6 @@ public class DrawbridgeCreator extends ToolUser
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
             return;
         }
-        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+        selector(loc, true);
     }
 }

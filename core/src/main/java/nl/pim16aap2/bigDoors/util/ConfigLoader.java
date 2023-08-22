@@ -3,8 +3,6 @@ package nl.pim16aap2.bigDoors.util;
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.BigDoors.MCVersion;
-import nl.pim16aap2.bigDoors.compatibility.IProtectionCompatDefinition;
-import nl.pim16aap2.bigDoors.compatibility.ProtectionCompatDefinition;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -77,7 +75,6 @@ public class ConfigLoader
     private boolean allowCodeGeneration;
     private boolean forceCodeGeneration;
 
-    private Map<IProtectionCompatDefinition, Boolean> hooksMap;
     private Set<Material> powerBlockTypesMap;
     private Set<Material> blacklist;
     private Set<Material> whitelist;
@@ -134,7 +131,6 @@ public class ConfigLoader
                                                   RESOURCEPACKS.get(LATEST_RESOURCE_PACK_VERSION));
         configOptionsList = new ArrayList<>();
         powerBlockTypesMap = new HashSet<>();
-        hooksMap = new HashMap<>(ProtectionCompatDefinition.DEFAULT_COMPAT_DEFINITIONS.size());
         header = "Config file for BigDoors. Don't forget to make a backup before making changes!";
         makeConfig();
     }
@@ -305,15 +301,6 @@ public class ConfigLoader
 
         allowStats = config.getBoolean("allowStats", true);
         configOptionsList.add(new ConfigOption("allowStats", allowStats, allowStatsComment));
-
-        int idx = 0;
-        for (IProtectionCompatDefinition compat : ProtectionCompatDefinition.DEFAULT_COMPAT_DEFINITIONS)
-        {
-            final String name = compat.getName().toLowerCase(Locale.US);
-            final boolean isEnabled = config.getBoolean(name, true);
-            configOptionsList.add(new ConfigOption(name, isEnabled, ((idx++ == 0) ? compatibilityHooks : null)));
-            hooksMap.put(compat, isEnabled);
-        }
 
         maxDoorSize = config.getInt("maxDoorSize", -1);
         configOptionsList.add(new ConfigOption("maxDoorSize", maxDoorSize, maxDoorSizeComment));
@@ -701,11 +688,6 @@ public class ConfigLoader
     public Set<Material> getPowerBlockTypes()
     {
         return powerBlockTypesMap;
-    }
-
-    public boolean isHookEnabled(final IProtectionCompatDefinition hook)
-    {
-        return hooksMap.get(hook);
     }
 
     public int getMaxBlocksToMove()

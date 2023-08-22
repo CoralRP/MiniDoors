@@ -102,7 +102,7 @@ public class Commander
         onDoorDelete(db.removeDoor(doorUID));
     }
 
-    public Set<Door> getDoors() {
+    public ArrayList<Door> getDoors() {
         return db.getDoors();
     }
 

@@ -21,11 +21,7 @@ public class WaitForSetTime extends WaitForCommand
     }
 
     @Override
-    public boolean executeCommand(String[] args)
-    {
-        if (!plugin.getCommander().hasPermissionForAction(player, doorUID, DoorAttribute.CHANGETIMER))
-            return true;
-
+    public boolean executeCommand(String[] args) {
         if (args.length == 1)
             try
             {
@@ -37,7 +33,7 @@ public class WaitForSetTime extends WaitForCommand
                     return true;
                 }
 
-                plugin.getCommandHandler().setDoorOpenTime(player, doorUID, time);
+                plugin.getCommandHandler().setDoorOpenTime(doorUID, time);
                 plugin.removeCommandWaiter(this);
                 if (time != -1)
                     Util.messagePlayer(player, plugin.getMessages().getString("COMMAND.SetTime.Success") + time + "s.");

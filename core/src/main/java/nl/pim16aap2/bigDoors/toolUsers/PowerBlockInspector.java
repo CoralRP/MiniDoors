@@ -27,7 +27,7 @@ public class PowerBlockInspector extends ToolUser
     @Override
     protected void triggerFinishUp()
     {
-        finishUp(null);
+        finishUp(player, null);
     }
 
     // Take care of the selection points.

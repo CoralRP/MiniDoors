@@ -298,40 +298,7 @@ public interface Opener
         return isValidOpenDirection(door.getOpenDir());
     }
 
-    /**
-     * Retrieves the coordinate pair describing the region the door would move into if it were toggled right now.
-     * <p>
-     * Note that this will check the blocks in the world. If the server hasn't loaded the required chunk(s), the
-     * chunk(s) will be loaded!
-     * <p>
-     * This method may not always be able to find the future coordinates for the following reasons:
-     * <p>
-     * 1) The opening direction is specified, but it is obstructed. So there are no new coordinates, because it could
-     * not go anywhere.
-     * <p>
-     * 2) The opening direction is not specified and all possible directions (exact number depends on the type, e.g. 2
-     * for doors, 4 for sliding doors) are obstructed. In this case there are no new coordinates, because it cannot go
-     * anywhere and because even if it wanted to, it wouldn't know which direction to go.
-     * <p>
-     * 3) The door's size ({@link #getSizeLimit(Door)}) exceeds {@link Door#getBlockCount()}.
-     * <p>
-     * 4) The door's {@link Door#getBlocksToMove()} exceeds {@link ConfigLoader#getMaxBlocksToMove()}. This only applies
-     * to doors which actually use this (i.e. portcullis, sliding door).
-     *
-     * @param door The door for which to find the new coordinates.
-     * @return The new minimum and maximum coordinates the door would take up if it were toggled now.
-     */
-    @SuppressWarnings("unused")
     @NotNull Optional<Pair<Location, Location>> getNewCoordinates(@NotNull Door door);
-
-    default int getSizeLimit(final Door door)
-    {
-        int globalLimit = BigDoors.get().getConfigLoader().maxDoorSize();
-        Player player = Bukkit.getPlayer(door.getPlayerUUID());
-        int personalLimit = player == null ? -1 : Util.getMaxDoorSizeForPlayer(player);
-
-        return Util.minPositive(personalLimit, globalLimit);
-    }
 
     /**
      * Checks if there aren't any obstructions between two positions.
@@ -381,61 +348,6 @@ public interface Opener
         return isPosFree(doorUID, world, locations.first, locations.second);
     }
 
-    /**
-     * Checks if a player has access to both the new and the old positions of a door.
-     * <p>
-     * See {@link BigDoors#canBreakBlocksBetweenLocs(UUID, String, World, Location, Location)}.
-     *
-     * @param door   The door which data to use for check the owner's access to the new and the old locations.
-     * @param newMin The new minimum coordinates.
-     * @param newMax The new maximum coordinates.
-     * @return True if the owner of the door has access to both the current area of the door and the new area of the
-     * door.
-     */
-    default CompletableFuture<Boolean> hasAccessToLocations(
-        @NotNull Door door, @NotNull Location newMin, @NotNull Location newMax)
-    {
-        if (BigDoors.get().getProtectionCompatManager().registeredCompatsCount() == 0)
-            return CompletableFuture.completedFuture(true);
-
-        final CompletableFuture<@Nullable String> oldLoc =
-            BigDoors.get().canBreakBlocksBetweenLocs(
-                door.getPlayerUUID(), door.getPlayerName(), door.getWorld(), door.getMinimum(), door.getMaximum());
-
-        final CompletableFuture<@Nullable String> newLoc =
-            BigDoors.get().canBreakBlocksBetweenLocs(
-                door.getPlayerUUID(), door.getPlayerName(), door.getWorld(), newMin, newMax);
-
-        return Util.getAllCompletableFutureResults(oldLoc, newLoc).thenApply(
-            lst ->
-            {
-                final @Nullable String canBreakOldBlocks = lst.get(0);
-                if (canBreakOldBlocks != null)
-                {
-                    BigDoors.get().getMyLogger().logMessageToLogFile(
-                        "Toggle denied because access to new location was prevented by " + canBreakOldBlocks +
-                            " for door: " + door);
-                    return false;
-                }
-
-                final @Nullable String canBreakNewBlocks = lst.get(1);
-                if (canBreakNewBlocks != null)
-                {
-                    BigDoors.get().getMyLogger().logMessageToLogFile(
-                        "Toggle denied because access to old location was prevented by " + canBreakNewBlocks +
-                            " for door: " + door);
-                    return false;
-                }
-                return true;
-            }).exceptionally(throwable -> Util.exceptionally(throwable, false));
-    }
-
-    /**
-     * Fires a {@link DoorEventTogglePrepare} for the given door.
-     *
-     * @param door The door that will be toggled.
-     * @return True if the event has been cancelled.
-     */
     default boolean fireDoorEventTogglePrepare(final Door door, final boolean instantOpen)
     {
         final ToggleType toggleType = door.isOpen() ? ToggleType.CLOSE : ToggleType.OPEN;

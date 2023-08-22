@@ -37,16 +37,14 @@ public class DoorCreator extends ToolUser
     }
 
     @Override
-    protected void triggerGiveTool()
-    {
+    protected void triggerGiveTool() {
         giveToolToPlayer(messages.getString("CREATOR." + typeString + ".StickLore").split("\n"),
                          messages.getString("CREATOR." + typeString + ".StickReceived").split("\n"));
     }
 
     @Override
-    protected void triggerFinishUp()
-    {
-        finishUp(messages.getString("CREATOR." + typeString + ".Success"));
+    protected void triggerFinishUp() {
+        finishUp(player, messages.getString("CREATOR." + typeString + ".Success"));
     }
 
     @Override
@@ -88,9 +86,9 @@ public class DoorCreator extends ToolUser
         return xDepth == 0 ^ zDepth == 0;
     }
 
-    private void selector(Location loc, @Nullable String canBreakBlock)
+    private void selector(Location loc, boolean canBreakBlock)
     {
-        if (canBreakBlock != null)
+        if (!canBreakBlock)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
             return;
@@ -141,7 +139,7 @@ public class DoorCreator extends ToolUser
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
             return;
         }
-        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+
+        selector(loc, true);
     }
 }

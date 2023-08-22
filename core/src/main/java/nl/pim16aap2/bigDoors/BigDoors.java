@@ -3,10 +3,7 @@ package nl.pim16aap2.bigDoors;
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R3;
 import nl.pim16aap2.bigDoors.codegeneration.FallbackGeneratorManager;
-import nl.pim16aap2.bigDoors.compatibility.FakePlayerCreator;
-import nl.pim16aap2.bigDoors.compatibility.ProtectionCompatManager;
 import nl.pim16aap2.bigDoors.handlers.*;
 import nl.pim16aap2.bigDoors.moveBlocks.*;
 import nl.pim16aap2.bigDoors.reflection.BukkitReflectionUtil;
@@ -20,8 +17,6 @@ import nl.pim16aap2.bigDoors.waitForCommand.WaitForCommand;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
@@ -78,9 +73,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private HashMap<UUID, ToolUser> toolUsers;
     private HashMap<UUID, GUI> playerGUIs;
     private HashMap<UUID, WaitForCommand> cmdWaiters;
-    private FakePlayerCreator fakePlayerCreator;
     private AutoCloseScheduler autoCloseScheduler;
-    private ProtectionCompatManager protCompatMan;
     private @Nullable LoginResourcePackHandler rPackHandler;
     private TimedCache<Long /* Chunk */, HashMap<Long /* Loc */, Long /* doorUID */>> pbCache = null;
     private volatile boolean schedulerIsRunning = false;
@@ -166,9 +159,6 @@ public class BigDoors extends JavaPlugin implements Listener
         }
 
         logger.logMessageToLogFile("Starting BigDoors version: " + getDescription().getVersion());
-
-        Bukkit.getPluginManager().registerEvents(new LoginMessageHandler(this), this);
-
         try
         {
             validVersion = compatibleMCVer();
@@ -194,8 +184,6 @@ public class BigDoors extends JavaPlugin implements Listener
                                   "warning in the config before using it!", true, true);
             return;
         }
-        fakePlayerCreator = new FakePlayerCreator(this);
-
         init();
 
         autoCloseScheduler = new AutoCloseScheduler(this);
@@ -204,10 +192,7 @@ public class BigDoors extends JavaPlugin implements Listener
         Bukkit.getPluginManager().registerEvents(new GUIHandler(this), this);
         Bukkit.getPluginManager().registerEvents(new ChunkUnloadHandler(this), this);
 
-        // No need to put these in init, as they should not be reloaded.
         pbCache = new TimedCache<>(this, config.cacheTimeout());
-        protCompatMan = new ProtectionCompatManager(this);
-        Bukkit.getPluginManager().registerEvents(protCompatMan, this);
         db = new SQLiteJDBCDriverConnection(this, config.dbFile());
         commander = new Commander(this, db);
         doorOpener = new DoorOpener(this);
@@ -422,26 +407,6 @@ public class BigDoors extends JavaPlugin implements Listener
         return PACKAGE_VERSION;
     }
 
-    public CompletableFuture<@Nullable String> canBreakBlock(UUID playerUUID, String playerName, Location loc)
-    {
-        assertSchedulerRunning();
-        return protCompatMan.canBreakBlock(playerUUID, playerName, loc)
-            .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
-    }
-
-    public CompletableFuture<@Nullable String> canBreakBlocksBetweenLocs(
-        UUID playerUUID, String playerName, World world, Location loc1, Location loc2)
-    {
-        assertSchedulerRunning();
-        return protCompatMan.canBreakBlocksBetweenLocs(playerUUID, playerName, world, loc1, loc2)
-            .exceptionally(throwable -> Util.exceptionally(throwable, "ERROR"));
-    }
-
-    public ProtectionCompatManager getProtectionCompatManager()
-    {
-        return protCompatMan;
-    }
-
     public void restart()
     {
         if (!validVersion)
@@ -449,7 +414,6 @@ public class BigDoors extends JavaPlugin implements Listener
         reloadConfig();
 
         onDisable();
-        protCompatMan.restart();
         playerGUIs.forEach((key, value) -> value.close());
         playerGUIs.clear();
 
@@ -535,11 +499,6 @@ public class BigDoors extends JavaPlugin implements Listener
     public AutoCloseScheduler getAutoCloseScheduler()
     {
         return autoCloseScheduler;
-    }
-
-    public FakePlayerCreator getFakePlayerCreator()
-    {
-        return fakePlayerCreator;
     }
 
     public Opener getDoorOpener(DoorType type)
@@ -718,23 +677,14 @@ public class BigDoors extends JavaPlugin implements Listener
             return false;
         }
 
-        final String[] split = Bukkit.getBukkitVersion().split("-")[0].split("\\.");
-        final int minorVersion = Util.parseInt(split.length > 2 ? split[2] : null).orElse(0);
-
         fabf = null;
-        switch (version) {
-            case "v1_19_R3":
-                fabf = new FallingBlockFactory_V1_19_R3();
-                break;
-            case "v1_20_R1":
-                fabf = FallingBlockFactoryProvider.getFactory();
-                break;
-            default:
-                if (config.allowCodeGeneration())
-                    fabf = FallbackGeneratorManager.getFallingBlockFactory();
+        if (version.equals("v1_20_R1")) {
+            fabf = FallingBlockFactoryProvider.getFactory();
+        } else {
+            if (config.allowCodeGeneration())
+                fabf = FallbackGeneratorManager.getFallingBlockFactory();
         }
 
-        // Return true if compatible.
         return fabf != null;
     }
 
@@ -830,7 +780,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @SuppressWarnings("unused")
     public CompletableFuture<Boolean> toggleDoorFuture(long doorUID, boolean instantOpen)
     {
-        final Door door = getCommander().getDoor(null, doorUID);
+        final Door door = getCommander().getDoor(doorUID);
         return toggleDoorFuture0(door, 0.0, instantOpen);
     }
 
@@ -851,7 +801,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @SuppressWarnings("unused")
     public CompletableFuture<Boolean> toggleDoorFuture(long doorUID, double time)
     {
-        return toggleDoorFuture0(getCommander().getDoor(null, doorUID), time, false);
+        return toggleDoorFuture0(getCommander().getDoor(doorUID), time, false);
     }
 
     /**
@@ -866,7 +816,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @SuppressWarnings("unused")
     public CompletableFuture<Boolean> toggleDoorFuture(long doorUID)
     {
-        return toggleDoorFuture0(getCommander().getDoor(null, doorUID), 0.0, false);
+        return toggleDoorFuture0(getCommander().getDoor(doorUID), 0.0, false);
     }
 
     /**
@@ -890,7 +840,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @Deprecated
     public boolean toggleDoor(long doorUID, boolean instantOpen)
     {
-        final Door door = getCommander().getDoor(null, doorUID);
+        final Door door = getCommander().getDoor(doorUID);
         return toggleDoor(door, 0.0, instantOpen) == DoorOpenResult.SUCCESS;
     }
 
@@ -902,7 +852,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @Deprecated
     public boolean toggleDoor(long doorUID, double time)
     {
-        final Door door = getCommander().getDoor(null, doorUID);
+        final Door door = getCommander().getDoor(doorUID);
         return toggleDoor(door, time, false) == DoorOpenResult.SUCCESS;
     }
 
@@ -914,7 +864,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @Deprecated
     public boolean toggleDoor(long doorUID)
     {
-        final Door door = getCommander().getDoor(null, doorUID);
+        final Door door = getCommander().getDoor(doorUID);
         return toggleDoor(door, 0.0, false) == DoorOpenResult.SUCCESS;
     }
 
@@ -928,7 +878,7 @@ public class BigDoors extends JavaPlugin implements Listener
     @SuppressWarnings("unused")
     public boolean isOpen(long doorUID)
     {
-        final Door door = getCommander().getDoor(null, doorUID);
+        final Door door = getCommander().getDoor(doorUID);
         return this.isOpen(door);
     }
 

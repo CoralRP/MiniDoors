@@ -70,7 +70,7 @@ public class AutoCloseScheduler
                     }
                     else
                         plugin.getDoorOpener(door.getType())
-                            .openDoorFuture(plugin.getCommander().getDoor(null, door.getDoorUID()), time, instantOpen, false);
+                            .openDoorFuture(plugin.getCommander().getDoor(door.getDoorUID()), time, instantOpen, false);
                 }
                 deleteTimer(door.getDoorUID());
             }

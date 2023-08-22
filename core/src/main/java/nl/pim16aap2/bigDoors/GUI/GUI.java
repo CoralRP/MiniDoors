@@ -4,24 +4,13 @@ import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.BigDoors.MCVersion;
 import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.util.DoorAttribute;
-import nl.pim16aap2.bigDoors.util.DoorDirection;
-import nl.pim16aap2.bigDoors.util.DoorType;
-import nl.pim16aap2.bigDoors.util.Messages;
-import nl.pim16aap2.bigDoors.util.PageType;
-import nl.pim16aap2.bigDoors.util.RotateDirection;
-import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class GUI
@@ -40,16 +29,12 @@ public class GUI
     private static final Material RELOCATEPBMAT = Material.LEATHER_BOOTS;
     private static final Material SETOPENDIRMAT = Material.COMPASS;
     private static final Material SETBTMOVEMAT = XMaterial.STICKY_PISTON.parseMaterial();
-    private static final Material ADDOWNERMAT = XMaterial.PLAYER_HEAD.parseMaterial();
-    private static final Material REMOVEOWNERMAT = XMaterial.SKELETON_SKULL.parseMaterial();
     private static final Material NOTIFICATIONSMAT_ON = XMaterial.MUSIC_DISC_STAL.parseMaterial();
     private static final Material NOTIFICATIONSMAT_OFF = XMaterial.MUSIC_DISC_11.parseMaterial();
     private static final byte LOCKEDDATA = 14;
     private static final byte UNLOCKEDDATA = 5;
     private static final byte CONFIRMDATA = 14;
     private static final byte NOTCONFIRMDATA = 5;
-    private static final byte PLAYERHEADDATA = 3;
-    private static final byte SKULLDATA = 0;
     private static final int CHESTSIZE = 45;
     private static Material[] DOORTYPES = new Material[4];
 
@@ -84,9 +69,6 @@ public class GUI
     private PageType pageType;
     private int page;
     private final ArrayList<Door> doors;
-    private ArrayList<DoorOwner> owners;
-    private int doorOwnerPage = 0;
-    private int maxDoorOwnerPageCount = 0;
     private boolean sortAlphabetically = false;
     private Inventory inventory = null;
     private final Map<Integer, GUIItem> items;
@@ -104,22 +86,17 @@ public class GUI
         page = 0;
         items = new HashMap<>();
 
-        doors = plugin.getCommander().getDoors(player.getUniqueId().toString(), null);
+        doors = plugin.getCommander().getDoors();
 
         sort();
         update();
     }
 
-    private void addLore(final ArrayList<String> lore, final String toAdd)
-    {
+    private void addLore(final ArrayList<String> lore, final String toAdd) {
         lore.addAll(Arrays.asList(newLines.split(toAdd)));
     }
 
-    private void update()
-    {
-        if (!(pageType == PageType.DOORLIST || pageType == PageType.DOORCREATION))
-            isStillOwner();
-
+    private void update() {
         items.clear();
         maxPageCount = doors.size() / (CHESTSIZE - 9) + ((doors.size() % (CHESTSIZE - 9)) == 0 ? 0 : 1);
 
@@ -138,6 +115,7 @@ public class GUI
         }
         else if (pageType == PageType.DOORLIST || pageType == PageType.DOORCREATION)
         {
+            System.out.println("STO RIEMPIENDO LE PORTE");
             fillDefaultHeader();
             fillDoors();
         }
@@ -145,28 +123,6 @@ public class GUI
         inventory = Bukkit.createInventory(player, CHESTSIZE, messages.getString(PageType.getMessage(pageType)));
         player.openInventory(inventory);
         items.forEach((k, v) -> inventory.setItem(k, v.getItemStack()));
-    }
-
-    private void fillOwnerListHeader()
-    {
-        fillInfoHeader();
-
-        ArrayList<String> lore = new ArrayList<>();
-        if (doorOwnerPage != 0)
-        {
-            addLore(lore, messages.getString("GUI.ToPage") + doorOwnerPage + messages.getString("GUI.OutOf")
-                + maxDoorOwnerPageCount);
-            items.put(1, new GUIItem(PAGESWITCHMAT, messages.getString("GUI.PreviousPage"), lore, doorOwnerPage));
-            lore.clear();
-        }
-
-        if ((doorOwnerPage + 1) < maxDoorOwnerPageCount)
-        {
-            addLore(lore, messages.getString("GUI.ToPage") + (doorOwnerPage + 2) + messages.getString("GUI.OutOf")
-                + maxDoorOwnerPageCount);
-            items.put(7, new GUIItem(PAGESWITCHMAT, messages.getString("GUI.NextPage"), lore, doorOwnerPage + 2));
-            lore.clear();
-        }
     }
 
     private void fillInfoHeader()
@@ -240,7 +196,6 @@ public class GUI
         }
     }
 
-    // Add all the currently selected door's information items.
     private void fillInformationItems()
     {
         int position = 9;
@@ -259,10 +214,7 @@ public class GUI
         }
     }
 
-    // Populate the inventory (starting at the second row, as counted from the top)
-    // with doors.
-    private void fillDoors()
-    {
+    private void fillDoors() {
         int offset = page * (CHESTSIZE - 9);
         int endCount = Math.min((CHESTSIZE - 9), (doors.size() - offset));
         ArrayList<String> lore = new ArrayList<>();
@@ -284,20 +236,6 @@ public class GUI
             items.put(idx + 9, item);
             lore.clear();
         }
-    }
-
-    private boolean isStillOwner()
-    {
-        if (door != null &&
-            plugin.getCommander().getPermission(player.getUniqueId().toString(), door.getDoorUID()) == -1)
-        {
-            doors.remove(door);
-            door = null;
-
-            pageType = PageType.DOORLIST;
-            return false;
-        }
-        return true;
     }
 
     public void handleInput(int interactionIDX)
@@ -327,10 +265,7 @@ public class GUI
         }
     }
 
-    private void handleInputConfirmation(int interactionIDX)
-    {
-        if (!isStillOwner())
-            return;
+    private void handleInputConfirmation(int interactionIDX) {
         int mid = (CHESTSIZE - 9) / 2 + 4;
 
         if (interactionIDX == mid)
@@ -340,8 +275,7 @@ public class GUI
         update();
     }
 
-    private void handleInputDoorInfo(int interactionIDX)
-    {
+    private void handleInputDoorInfo(int interactionIDX) {
         if (interactionIDX == 0)
         {
             pageType = PageType.DOORLIST;
@@ -353,14 +287,9 @@ public class GUI
             if (attribute == null)
                 return;
 
-            if (!plugin.getCommander().hasPermissionForAction(player, door.getDoorUID(), attribute))
-            {
-                update();
-                return;
-            }
+            update();
 
-            switch (attribute)
-            {
+            switch (attribute) {
             case LOCK:
                 door.setLock(!door.isLocked());
                 plugin.getCommander().setLock(door.getDoorUID(), door.isLocked());
@@ -382,7 +311,7 @@ public class GUI
                 break;
             case DIRECTION_STRAIGHT:
             case DIRECTION_ROTATE:
-                changeOpenDir(player, door);
+                changeOpenDir(door);
                 break;
             case CHANGETIMER:
                 plugin.getCommandHandler().startTimerSetter(player, door.getDoorUID());
@@ -391,13 +320,6 @@ public class GUI
             case BLOCKSTOMOVE:
                 plugin.getCommandHandler().startBlocksToMoveSetter(player, door.getDoorUID());
                 close();
-                break;
-            case ADDOWNER:
-                plugin.getCommandHandler().startAddOwner(player, door.getDoorUID());
-                close();
-                break;
-            case REMOVEOWNER:
-                switchToRemoveOwner();
                 break;
             case NOTIFICATIONS:
                 boolean newStatus = !door.notificationEnabled();
@@ -449,16 +371,10 @@ public class GUI
                 close();
                 return;
             }
-            if (isStillOwner())
-                pageType = PageType.DOORINFO;
+
+            pageType = PageType.DOORINFO;
             update();
         }
-    }
-
-    private void switchToRemoveOwner()
-    {
-        plugin.getCommandHandler().startRemoveOwner(player, door.getDoorUID());
-        close();
     }
 
     private void sort()
@@ -469,11 +385,7 @@ public class GUI
             Collections.sort(doors, Comparator.comparing(Door::getDoorUID));
     }
 
-    private GUIItem getGUIItem(Door door, DoorAttribute atr)
-    {
-        // If the permission level is higher than the
-        if (door.getPermission() > DoorAttribute.getPermissionLevel(atr))
-            return null;
+    private GUIItem getGUIItem(Door door, DoorAttribute atr) {
 
         ArrayList<String> lore = new ArrayList<>();
         String desc, loreStr;
@@ -554,16 +466,6 @@ public class GUI
             ret = new GUIItem(SETBTMOVEMAT, desc, lore, 1);
             break;
 
-        case ADDOWNER:
-            desc = messages.getString("GUI.ADDOWNER");
-            ret = new GUIItem(ADDOWNERMAT, desc, lore, 1, PLAYERHEADDATA);
-            break;
-
-        case REMOVEOWNER:
-            desc = messages.getString("GUI.REMOVEOWNER");
-            ret = new GUIItem(REMOVEOWNERMAT, desc, lore, 1, SKULLDATA);
-            break;
-
         case NOTIFICATIONS:
             desc = messages.getString("GUI.ReceiveNotifications");
             addLore(lore, door.notificationEnabled() ?
@@ -585,8 +487,7 @@ public class GUI
         return player;
     }
 
-    public void close()
-    {
+    public void close() {
         player.closeInventory();
         plugin.removeGUIUser(this);
     }
@@ -596,21 +497,17 @@ public class GUI
      * commander.
      */
 
-    private void deleteDoor()
-    {
-        if (plugin.getCommander().removeDoor(getPlayer(), door.getDoorUID()))
-            doors.remove(door);
+    private void deleteDoor() {
+        plugin.getCommander().removeDoor(door.getDoorUID());
+        doors.remove(door);
     }
 
-    private void startCreationProcess(Player player, DoorType type)
-    {
+    private void startCreationProcess(Player player, DoorType type) {
         player.closeInventory();
         plugin.getCommandHandler().startCreator(player, null, type);
     }
 
-    // Changes the opening direction for a door.
-    private void changeOpenDir(Player player, Door door)
-    {
+    private void changeOpenDir(Door door) {
         RotateDirection curOpenDir = door.getOpenDir();
         RotateDirection newOpenDir;
 

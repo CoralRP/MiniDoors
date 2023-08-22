@@ -89,15 +89,7 @@ public class BridgeOpener implements Opener
     }
 
     @Override
-    public @Nonnull Optional<Pair<Location, Location>> getNewCoordinates(@Nonnull Door door)
-    {
-        final int maxDoorSize = getSizeLimit(door);
-        if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
-        {
-            plugin.getMyLogger().warn("Size " + door.getBlockCount() + " exceeds limit of " +
-                                          maxDoorSize + " for drawbridge: " + door);
-            return Optional.empty();
-        }
+    public @Nonnull Optional<Pair<Location, Location>> getNewCoordinates(@Nonnull Door door) {
 
         RotateDirection upDown = getUpDown(door);
         if (upDown == null)
@@ -397,13 +389,6 @@ public class BridgeOpener implements Opener
 
         // Make sure the doorSize does not exceed the total doorSize.
         // If it does, open the door instantly.
-        int maxDoorSize = getSizeLimit(door);
-        if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
-        {
-            plugin.getMyLogger().logMessage(
-                "Door " + door.toSimpleString() + " Exceeds the size limit: " + maxDoorSize, true, false);
-            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
-        }
 
         if (fireDoorEventTogglePrepare(door, instantOpen))
             return CompletableFuture.completedFuture(abort(DoorOpenResult.CANCELLED, door.getDoorUID()));
@@ -412,14 +397,8 @@ public class BridgeOpener implements Opener
             return CompletableFuture.completedFuture(openDoor0(door, time, upDown, instantOpen, openingSpecification));
 
         final boolean instantOpen0 = instantOpen;
-        return hasAccessToLocations(door, openingSpecification.min, openingSpecification.max).thenCompose(
-            hasAccess ->
-            {
-                if (!hasAccess)
-                    return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
-                return Util.runSync(() -> openDoor0(door, time, upDown, instantOpen0, openingSpecification),
-                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
-            }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
+        return Util.runSync(() -> openDoor0(door, time, upDown, instantOpen0, openingSpecification),
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     private DoorOpenResult openDoor0(

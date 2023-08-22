@@ -254,17 +254,17 @@ public class SQLiteJDBCDriverConnection {
         return door;
     }
 
-    public Set<Door> getDoors() {
-        Set<Door> doors = new HashSet<>();
+    public ArrayList<Door> getDoors() {
+        ArrayList<Door> doors = new ArrayList<>();
         try (Connection conn = getConnection();
-             PreparedStatement stmp = conn.prepareStatement("SELECT DISTINCT (d.id), name, world, isopen, xmin, ymin, zmin, xmax, ymax, zmax, enginex, enginey, enginez, islocked, type, engineside, powerblockx, powerblocky, powerblockz, opendirection, autoclose, chunkhash, blockstomove, notify, p.playername, p.playeruuid from (SELECT d.*, u.playerid FROM doors d left join sqlUnion u on d.id = u.doorUID where u.permission = 0) d left join players p on p.id = d.playerid");
+             PreparedStatement stmp = conn.prepareStatement("SELECT * from doors");
              ResultSet rs = stmp.executeQuery()) {
             while (rs.next()) {
                 doors.add(newDoorFromRS(rs, rs.getInt(DOOR_ID)));
             }
         } catch (SQLException | NullPointerException e) {
             logMessage("541", e);
-            return Collections.emptySet();
+            return doors;
         }
         return doors;
     }

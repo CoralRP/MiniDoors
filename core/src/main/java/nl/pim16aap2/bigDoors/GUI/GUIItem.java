@@ -19,8 +19,6 @@ public class GUIItem
     private byte data = 0;
     private String name;
     private Material mat;
-    private DoorOwner doorOwner = null;
-    private boolean missingHeadTexture;
     private DoorAttribute attribute = null;
 
     public GUIItem(Material mat, String name, ArrayList<String> lore, int count, byte data)
@@ -44,15 +42,6 @@ public class GUIItem
         construct();
     }
 
-    public GUIItem(ItemStack is, String name, ArrayList<String> lore, int count)
-    {
-        this.name = name;
-        this.lore = lore;
-        this.count = count;
-        this.is = is;
-        is.setAmount(count);
-        construct();
-    }
 
     private void construct()
     {
@@ -61,11 +50,6 @@ public class GUIItem
         meta.setLore(lore);
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         is.setItemMeta(meta);
-    }
-
-    public boolean missingHeadTexture()
-    {
-        return missingHeadTexture;
     }
 
     public ItemStack getItemStack()
@@ -116,10 +100,5 @@ public class GUIItem
     public byte getData()
     {
         return data;
-    }
-
-    public DoorOwner getDoorOwner()
-    {
-        return doorOwner;
     }
 }

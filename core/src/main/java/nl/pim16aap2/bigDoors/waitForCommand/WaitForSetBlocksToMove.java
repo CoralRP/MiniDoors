@@ -24,9 +24,6 @@ public class WaitForSetBlocksToMove extends WaitForCommand
     @Override
     public boolean executeCommand(String[] args)
     {
-        if (!plugin.getCommander().hasPermissionForAction(player, doorUID, DoorAttribute.BLOCKSTOMOVE))
-            return true;
-
         if (args.length == 1)
             try
             {
@@ -39,7 +36,7 @@ public class WaitForSetBlocksToMove extends WaitForCommand
                     return true;
                 }
 
-                plugin.getCommandHandler().setDoorBlocksToMove(player, doorUID, blocksToMove);
+                plugin.getCommandHandler().setDoorBlocksToMove(doorUID, blocksToMove);
                 plugin.removeCommandWaiter(this);
                 if (blocksToMove > 0)
                     Util.messagePlayer(player, plugin.getMessages().getString("COMMAND.SetBlocksToMove.Success")

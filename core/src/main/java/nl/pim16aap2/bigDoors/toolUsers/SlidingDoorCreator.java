@@ -36,7 +36,7 @@ public class SlidingDoorCreator extends ToolUser
     @Override
     protected void triggerFinishUp()
     {
-        finishUp(messages.getString("CREATOR.SLIDINGDOOR.Success"));
+        finishUp(player, messages.getString("CREATOR.SLIDINGDOOR.Success"));
     }
 
     // Make sure the power point is in the middle.
@@ -58,9 +58,9 @@ public class SlidingDoorCreator extends ToolUser
         return true;
     }
 
-    private void selector(Location loc, @Nullable String canBreakBlock)
+    private void selector(Location loc, @Nullable boolean canBreakBlock)
     {
-        if (canBreakBlock != null)
+        if (!canBreakBlock)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
             return;
@@ -93,7 +93,6 @@ public class SlidingDoorCreator extends ToolUser
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
             return;
         }
-        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+        selector(loc, true);
     }
 }

@@ -35,9 +35,8 @@ public class PortcullisCreator extends ToolUser
     }
 
     @Override
-    protected void triggerFinishUp()
-    {
-        finishUp(messages.getString("CREATOR.PORTCULLIS.Success"));
+    protected void triggerFinishUp() {
+        finishUp(player, messages.getString("CREATOR.PORTCULLIS.Success"));
     }
 
     // Make sure the power point is in the middle.
@@ -49,9 +48,9 @@ public class PortcullisCreator extends ToolUser
         engine = new Location(one.getWorld(), xMid, yMin, zMid);
     }
 
-    private void selector(Location loc, @Nullable String canBreakBlock)
+    private void selector(Location loc, @Nullable boolean canBreakBlock)
     {
-        if (canBreakBlock != null)
+        if (!canBreakBlock)
         {
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
             return;
@@ -82,7 +81,6 @@ public class PortcullisCreator extends ToolUser
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.GiveNameInstruc"));
             return;
         }
-        plugin.canBreakBlock(player.getUniqueId(), player.getName(), loc)
-              .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(plugin, () -> selector(loc, canBreakBlock)));
+        selector(loc, true);
     }
 }

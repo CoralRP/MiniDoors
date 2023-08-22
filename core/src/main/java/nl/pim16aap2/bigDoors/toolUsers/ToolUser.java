@@ -2,23 +2,15 @@ package nl.pim16aap2.bigDoors.toolUsers;
 
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.util.Abortable;
-import nl.pim16aap2.bigDoors.util.DoorDirection;
-import nl.pim16aap2.bigDoors.util.DoorType;
-import nl.pim16aap2.bigDoors.util.Messages;
-import nl.pim16aap2.bigDoors.util.RotateDirection;
-import nl.pim16aap2.bigDoors.util.Util;
-import org.bukkit.Bukkit;
+import nl.pim16aap2.bigDoors.util.*;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -66,52 +58,20 @@ public abstract class ToolUser extends Abortable
     // Check if all the variables that cannot be null are not null.
     protected abstract boolean isReadyToCreateDoor();
 
-    private void finishUp(String message, World world, Location min, Location max, @Nullable String canBreakBlock)
-    {
-        final Location engine = new Location(
-            world, this.engine.getBlockX(), this.engine.getBlockY(), this.engine.getBlockZ());
-        final Location powerB = new Location(
-            world, this.engine.getBlockX(), this.engine.getBlockY() - 1, this.engine.getBlockZ());
+    // Final cleanup and door creation.
+    protected final void finishUp(Player player, String message) {
+        Location engine = new Location(
+                one.getWorld(), this.engine.getBlockX(), this.engine.getBlockY(), this.engine.getBlockZ());
+        Location powerB = new Location(
+                one.getWorld(), this.engine.getBlockX(), this.engine.getBlockY() - 1, this.engine.getBlockZ());
 
-        if (canBreakBlock != null)
-        {
-            Util.messagePlayer(player,
-                               messages.getString("CREATOR.GENERAL.NoPermissionHere") + " " + canBreakBlock);
-            this.abort(false);
-            return;
-        }
+        plugin.getCommander().addDoor(new Door(one.getWorld(), one, two, engine, name, isOpen, doorUID, false, type,
+                engineSide, powerB, openDir, -1, false));
 
-        final Door door = new Door(world, min, max, engine, name, isOpen, -1,
-            false, 0, type, engineSide, powerB, openDir, -1, false);
+        Util.messagePlayer(player, message);
 
-        final int doorSize = door.getBlockCount();
-        final int sizeLimit =
-            Util.minPositive(Util.getMaxDoorSizeForPlayer(player), plugin.getConfigLoader().maxDoorSize());
-
-        if (sizeLimit >= 0 && sizeLimit <= doorSize)
-            Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.TooManyBlocks") + " " + sizeLimit);
         takeToolFromPlayer();
         this.abort();
-    }
-
-    // Final cleanup and door creation.
-    protected final void finishUp(String message)
-    {
-        if (isReadyToCreateDoor() && !aborting)
-        {
-            final World world = one.getWorld();
-            final Location min = new Location(world, one.getBlockX(), one.getBlockY(), one.getBlockZ());
-            final Location max = new Location(world, two.getBlockX(), two.getBlockY(), two.getBlockZ());
-
-            plugin.canBreakBlocksBetweenLocs(player.getUniqueId(), player.getName(), world, min, max)
-                  .thenApply(canBreakBlock -> Bukkit.getScheduler().runTask(
-                      plugin, () -> finishUp(message, world, min, max, canBreakBlock)));
-        }
-        else
-        {
-            takeToolFromPlayer();
-            this.abort();
-        }
     }
 
     protected final void giveToolToPlayer(String[] lore, String[] message)

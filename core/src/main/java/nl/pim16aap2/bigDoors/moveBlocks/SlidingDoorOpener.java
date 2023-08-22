@@ -172,15 +172,6 @@ public class SlidingDoorOpener implements Opener
             return Optional.empty();
         }
 
-        final int maxDoorSize = getSizeLimit(door);
-        if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
-        {
-            plugin.getMyLogger().warn("Size " + door.getBlockCount() +
-                                          " exceeds limit of " + maxDoorSize +
-                                          " for sliding door: " + door);
-            return Optional.empty();
-        }
-
         final MovementSpecification blocksToMove = getBlocksToMove(door);
 
         if (blocksToMove.getBlocks() == 0)
@@ -230,14 +221,6 @@ public class SlidingDoorOpener implements Opener
 
         // Make sure the doorSize does not exceed the total doorSize.
         // If it does, open the door instantly.
-        int maxDoorSize = getSizeLimit(door);
-        if (maxDoorSize > 0 && door.getBlockCount() > maxDoorSize)
-        {
-            plugin.getMyLogger()
-                  .logMessage("Sliding Door " + door.toSimpleString() + " Exceeds the size limit: " + maxDoorSize,
-                              true, false);
-            return CompletableFuture.completedFuture(abort(DoorOpenResult.ERROR, door.getDoorUID()));
-        }
 
         if (door.getBlocksToMove() > BigDoors.get().getConfigLoader().getMaxBlocksToMove())
         {
@@ -282,14 +265,8 @@ public class SlidingDoorOpener implements Opener
             return CompletableFuture.completedFuture(openDoor0(door, time, instantOpen, blocksToMove));
 
         final boolean instantOpen0 = instantOpen;
-        return hasAccessToLocations(door, newMin, newMax).thenCompose(
-            hasAccess ->
-            {
-                if (!hasAccess)
-                    return CompletableFuture.completedFuture(abort(DoorOpenResult.NOPERMISSION, door.getDoorUID()));
-                return Util.runSync(() -> openDoor0(door, time, instantOpen0, blocksToMove),
-                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR);
-            }).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
+        return Util.runSync(() -> openDoor0(door, time, instantOpen0, blocksToMove),
+                                    1, TimeUnit.SECONDS, DoorOpenResult.ERROR).exceptionally(throwable -> Util.exceptionally(throwable, DoorOpenResult.ERROR));
     }
 
     private DoorOpenResult openDoor0(Door door, double time, boolean instantOpen, MovementSpecification blocksToMove)
