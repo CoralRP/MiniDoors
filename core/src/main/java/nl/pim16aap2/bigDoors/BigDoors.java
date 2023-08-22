@@ -3,51 +3,19 @@ package nl.pim16aap2.bigDoors;
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_11_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_12_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_13_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_13_R1_5;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_13_R2;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_14_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_15_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_16_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_16_R2;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_16_R3;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_17_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_18_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_18_R2;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R1_1;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R2;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory_V1_19_R3;
 import nl.pim16aap2.bigDoors.codegeneration.FallbackGeneratorManager;
 import nl.pim16aap2.bigDoors.compatibility.FakePlayerCreator;
 import nl.pim16aap2.bigDoors.compatibility.ProtectionCompatManager;
-import nl.pim16aap2.bigDoors.handlers.ChunkUnloadHandler;
-import nl.pim16aap2.bigDoors.handlers.CommandHandler;
-import nl.pim16aap2.bigDoors.handlers.EventHandlers;
-import nl.pim16aap2.bigDoors.handlers.FailureCommandHandler;
-import nl.pim16aap2.bigDoors.handlers.GUIHandler;
-import nl.pim16aap2.bigDoors.handlers.LoginMessageHandler;
-import nl.pim16aap2.bigDoors.handlers.LoginResourcePackHandler;
-import nl.pim16aap2.bigDoors.handlers.RedstoneHandler;
-import nl.pim16aap2.bigDoors.moveBlocks.BridgeOpener;
-import nl.pim16aap2.bigDoors.moveBlocks.DoorOpener;
-import nl.pim16aap2.bigDoors.moveBlocks.Opener;
-import nl.pim16aap2.bigDoors.moveBlocks.PortcullisOpener;
-import nl.pim16aap2.bigDoors.moveBlocks.SlidingDoorOpener;
+import nl.pim16aap2.bigDoors.handlers.*;
+import nl.pim16aap2.bigDoors.moveBlocks.*;
 import nl.pim16aap2.bigDoors.reflection.BukkitReflectionUtil;
 import nl.pim16aap2.bigDoors.storage.sqlite.SQLiteJDBCDriverConnection;
 import nl.pim16aap2.bigDoors.toolUsers.ToolUser;
 import nl.pim16aap2.bigDoors.toolUsers.ToolVerifier;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadMode;
 import nl.pim16aap2.bigDoors.util.ChunkUtils.ChunkLoadResult;
-import nl.pim16aap2.bigDoors.util.ConfigLoader;
-import nl.pim16aap2.bigDoors.util.DoorOpenResult;
-import nl.pim16aap2.bigDoors.util.DoorType;
-import nl.pim16aap2.bigDoors.util.Messages;
-import nl.pim16aap2.bigDoors.util.TimedCache;
-import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.util.*;
 import nl.pim16aap2.bigDoors.waitForCommand.WaitForCommand;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
@@ -67,18 +35,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -764,70 +722,7 @@ public class BigDoors extends JavaPlugin implements Listener
         final int minorVersion = Util.parseInt(split.length > 2 ? split[2] : null).orElse(0);
 
         fabf = null;
-        switch (version)
-        {
-            case "v1_8_R1":
-            case "v1_8_R2":
-            case "v1_8_R3":
-            case "v1_9_R1":
-            case "v1_9_R2":
-            case "v1_10_R1":
-                return false;
-            case "v1_11_R1":
-                fabf = new FallingBlockFactory_V1_11_R1();
-                break;
-            case "v1_12_R1":
-                fabf = new FallingBlockFactory_V1_12_R1();
-                break;
-            case "v1_13_R1":
-                fabf = new FallingBlockFactory_V1_13_R1();
-                break;
-            case "v1_13_R2":
-                if (minorVersion == 0)
-                {
-                    logger.severe("Failed to parse minor version from: \"" + Bukkit.getBukkitVersion() + "\"");
-                    return false;
-                }
-                // 1.13.1 has the same package version as 1.13.2, but there are actual NMS changes between them.
-                // That's why 1.13.1 is a kinda R1.5 package.
-                if (minorVersion == 1)
-                    fabf = new FallingBlockFactory_V1_13_R1_5();
-                else
-                    fabf = new FallingBlockFactory_V1_13_R2();
-                break;
-            case "v1_14_R1":
-                fabf = new FallingBlockFactory_V1_14_R1();
-                break;
-            case "v1_15_R1":
-                fabf = new FallingBlockFactory_V1_15_R1();
-                break;
-            case "v1_16_R1":
-                fabf = new FallingBlockFactory_V1_16_R1();
-                break;
-            case "v1_16_R2":
-                fabf = new FallingBlockFactory_V1_16_R2();
-                break;
-            case "v1_16_R3":
-                fabf = new FallingBlockFactory_V1_16_R3();
-                break;
-            case "v1_17_R1":
-                fabf = new FallingBlockFactory_V1_17_R1();
-                break;
-            case "v1_18_R1":
-                fabf = new FallingBlockFactory_V1_18_R1();
-                break;
-            case "v1_18_R2":
-                fabf = new FallingBlockFactory_V1_18_R2();
-                break;
-            case "v1_19_R1":
-                if (minorVersion == 0)
-                    fabf = new FallingBlockFactory_V1_19_R1();
-                else
-                    fabf = new FallingBlockFactory_V1_19_R1_1();
-                break;
-            case "v1_19_R2":
-                fabf = new FallingBlockFactory_V1_19_R2();
-                break;
+        switch (version) {
             case "v1_19_R3":
                 fabf = new FallingBlockFactory_V1_19_R3();
                 break;

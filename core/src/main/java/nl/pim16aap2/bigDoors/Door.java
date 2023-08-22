@@ -26,7 +26,6 @@ public class Door
     private DoorDirection  engineSide;
     private Location       powerBlock;
     private Integer     roundedLength;
-    private int            permission;
     private Location         chunkLoc;
     private Integer            length;
     private boolean notify;
@@ -36,7 +35,7 @@ public class Door
 
     // Generate a new door.
     public Door(World world, Location min, Location max, Location engine, String name, boolean isOpen, long doorUID,
-                boolean isLocked, int permission, DoorType type, DoorDirection engineSide, Location powerBlock,
+                boolean isLocked, DoorType type, DoorDirection engineSide, Location powerBlock,
                 RotateDirection openDir, int autoClose, boolean notify)
     {
         this.world      = world;
@@ -48,7 +47,6 @@ public class Door
         this.isOpen     = isOpen;
         this.doorUID    = doorUID;
         this.isLocked   = isLocked;
-        this.permission = permission;
         this.type       = type;
         this.engineSide = engineSide;
         chunkLoc        = null;
@@ -60,11 +58,11 @@ public class Door
     }
 
     public Door(World world, Location min, Location max, Location engine, String name, boolean isOpen,
-                long doorUID, boolean isLocked, int permission, DoorType type, Location powerBlock,
+                long doorUID, boolean isLocked, DoorType type, Location powerBlock,
                 RotateDirection openDir, int autoClose, boolean notify)
     {
         this(world, min, max, engine, name, isOpen,
-             doorUID, isLocked, permission, type, null, powerBlock, openDir, autoClose, notify);
+             doorUID, isLocked, type, null, powerBlock, openDir, autoClose, notify);
     }
 
     // ------------------------ SIMPLE GETTERS -------------------- //
@@ -84,7 +82,6 @@ public class Door
     public long getDoorUID()            {  return doorUID;       }  // Get doorUID as used in the doors table in the db.
     public boolean isLocked()           {  return isLocked;      }  // Check if this door is locked or not.
     public boolean isOpen()             {  return isOpen;        }  // Check if this door is in the open or closed state.
-    public int getPermission()          {  return permission;    }  // Check permission level of current owner.
     public DoorDirection getEngSide()   {  return engineSide;    }  // Get this door's (or drawbridge's, in this case) engine side.
     public RotateDirection getOpenDir() {  return openDir;       }  // Get the open direction of this door.
     public int getAutoClose()           {  return autoClose;     }  // Get the auto close time.
@@ -159,11 +156,6 @@ public class Door
     public void setLock(boolean lock)
     {
         isLocked = lock;
-    }
-
-    public void setPermission(int permission)
-    {
-        this.permission = permission;
     }
 
     public void setEngineSide(DoorDirection newEngSide)

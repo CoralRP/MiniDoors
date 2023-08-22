@@ -3,23 +3,14 @@ package nl.pim16aap2.bigDoors;
 import nl.pim16aap2.bigDoors.events.DoorDeleteEvent;
 import nl.pim16aap2.bigDoors.moveBlocks.BlockMover;
 import nl.pim16aap2.bigDoors.storage.sqlite.SQLiteJDBCDriverConnection;
-import nl.pim16aap2.bigDoors.util.DoorAttribute;
-import nl.pim16aap2.bigDoors.util.DoorDirection;
-import nl.pim16aap2.bigDoors.util.Messages;
-import nl.pim16aap2.bigDoors.util.RotateDirection;
-import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
@@ -43,47 +34,16 @@ public class Commander
         players = new HashMap<>();
     }
 
-    public void prepareDatabaseForV2()
-    {
-        db.prepareForV2();
+    public void stopMovers(boolean onDisable) {
+        for (BlockMover blockMover : busyDoors.values()) blockMover.cancel(onDisable);
     }
 
-    public void emptyBusyDoors()
-    {
-        busyDoors.clear();
-    }
-
-    public void stopMovers(boolean onDisable)
-    {
-        Iterator<BlockMover> it = busyDoors.values().iterator();
-        while (it.hasNext())
-            it.next().cancel(onDisable);
-    }
-
-    // Check if a door is busy
     public boolean isDoorBusy(long doorUID)
     {
         return busyDoors.containsKey(doorUID);
     }
 
-    /**
-     * Checks if a door is currently busy. If it is not, it will be registered as
-     * such using a placeholder.
-     *
-     * @param doorUID The UID of the door to check and potentially register as busy.
-     * @return True if the door is already busy and therefore not registered as
-     *         such.
-     */
-    public boolean isDoorBusyRegisterIfNot(long doorUID)
-    {
-        // putIfAbsent returns the result of ConcurrentHashMap#put(key, value)
-        // if the key did not exist in the map yet. Otherwise, it returns the
-        // mapping of the key.
-        // Likewise, the result of #put returns the previous mapping of the
-        // key if that existed, and null otherwise.
-        // Combined with the fact that null cannot be used as key or as value,
-        // a return result of null means that the key was not yet in the
-        // list (but is now).
+    public boolean isDoorBusyRegisterIfNot(long doorUID) {
         return busyDoors.putIfAbsent(doorUID, DUMMYMOVER) != null;
     }
 
@@ -98,32 +58,20 @@ public class Commander
         busyDoors.replace(mover.getDoorUID(), mover);
     }
 
-    public BlockMover getBlockMover(long doorUID)
-    {
-        BlockMover mover = busyDoors.get(doorUID);
-        return mover instanceof DummyMover ? null : mover;
-    }
-
-    public Stream<BlockMover> getBlockMovers()
-    {
+    public Stream<BlockMover> getBlockMovers() {
         return busyDoors.values().stream().filter(BM -> !(BM instanceof DummyMover));
     }
 
-    // Check if the doors are paused.
     public boolean isPaused()
     {
         return paused;
     }
-
-    // Toggle the paused status of all doors.
+    
     public void togglePaused()
     {
         paused = !paused;
     }
 
-    // Check if the doors can go. This differs from begin paused in that it will
-    // finish up
-    // all currently moving doors.
     public boolean canGo()
     {
         return goOn;

@@ -393,12 +393,6 @@ public class CommandHandler implements CommandExecutor
 
             switch (firstCommand)
             {
-                case "preparedatabaseforv2":
-                    if (player != null) // Only the server may use this command.
-                        break;
-                    plugin.getCommander().prepareDatabaseForV2();
-                    break;
-
                 case "version":
                     if (player != null && !player.hasPermission("bigdoors.admin.version"))
                         break;
