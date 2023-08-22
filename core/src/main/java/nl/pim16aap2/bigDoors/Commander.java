@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -85,14 +84,8 @@ public class Commander
             Util.messagePlayer(player, door.toSimpleString());
     }
 
-    public Door getDoor(Player player, String doorStr) {
-        try {
-            long doorUID = Long.parseLong(doorStr);
-            return db.getDoor(doorUID);
-        } catch (NumberFormatException e) {
-            Util.messagePlayer(player, messages.getString("GENERAL.NoDoorsFound"));
-            return null;
-        }
+    public Door getDoor(long doorStr) {
+        return db.getDoor(doorStr);
     }
 
     public long addDoor(Door newDoor) {
@@ -113,7 +106,7 @@ public class Commander
         return db.getDoors();
     }
 
-    private ArrayList<Door> getDoors(String name) {
+    public ArrayList<Door> getDoors(String name) {
         return db.getDoors(name);
     }
 

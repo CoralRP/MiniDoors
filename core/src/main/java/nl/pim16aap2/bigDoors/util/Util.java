@@ -315,7 +315,7 @@ public final class Util
 
     public static String getBasicDoorInfo(Door door)
     {
-        return String.format("%5d (%d): %s", door.getDoorUID(), door.getPermission(), door.getName());
+        return String.format("%5d: %s", door.getDoorUID(), door.getName());
     }
 
     public static String getFullDoorInfo(Door door)
@@ -356,27 +356,6 @@ public final class Util
             return null;
         });
     }
-
-    public static int getMaxDoorsForPlayer(Player player)
-    {
-        if (player.isOp())
-            return -1;
-        return getHighestPermissionSuffix(player, "bigdoors.own.");
-    }
-
-    public static int getMaxDoorSizeForPlayer(Player player)
-    {
-        if (player.isOp())
-            return -1;
-        return getHighestPermissionSuffix(player, "bigdoors.maxsize.");
-    }
-
-    /**
-     * Gets the lowest value from a number of integers where value >= 0.
-     *
-     * @param values The integers for which to find the lowest positive value.
-     * @return The lowest positive value of the provided integers or -1 if all values were negative.
-     */
     public static int minPositive(final int... values)
     {
         boolean foundPositive = false;
