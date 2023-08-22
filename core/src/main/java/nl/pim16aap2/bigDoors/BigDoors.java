@@ -522,10 +522,7 @@ public class BigDoors extends JavaPlugin implements Listener
         commander.setCanGo(false);
         commander.stopMovers(true);
 
-        Iterator<Entry<UUID, ToolUser>> it = toolUsers.entrySet().iterator();
-        while (it.hasNext())
-        {
-            Entry<UUID, ToolUser> entry = it.next();
+        for (Entry<UUID, ToolUser> entry : toolUsers.entrySet()) {
             entry.getValue().abort();
         }
 
@@ -535,10 +532,7 @@ public class BigDoors extends JavaPlugin implements Listener
 
     private void closeGUIs()
     {
-        Iterator<UUID> it = playerGUIs.keySet().iterator();
-        while (it.hasNext())
-        {
-            UUID uuid = it.next();
+        for (UUID uuid : playerGUIs.keySet()) {
             Player player = Bukkit.getPlayer(uuid);
             if (player == null)
                 continue;

@@ -81,8 +81,7 @@ public abstract class ToolUser extends Abortable
             return;
         }
 
-        final Door door = new Door(
-            player.getUniqueId(), player.getName(), player.getUniqueId(), world, min, max, engine, name, isOpen, -1,
+        final Door door = new Door(world, min, max, engine, name, isOpen, -1,
             false, 0, type, engineSide, powerB, openDir, -1, false);
 
         final int doorSize = door.getBlockCount();
@@ -91,12 +90,6 @@ public abstract class ToolUser extends Abortable
 
         if (sizeLimit >= 0 && sizeLimit <= doorSize)
             Util.messagePlayer(player, messages.getString("CREATOR.GENERAL.TooManyBlocks") + " " + sizeLimit);
-        else if (plugin.getVaultManager().buyDoor(player, type, doorSize))
-        {
-            plugin.getCommander().addDoor(door);
-            if (message != null)
-                Util.messagePlayer(player, message);
-        }
         takeToolFromPlayer();
         this.abort();
     }

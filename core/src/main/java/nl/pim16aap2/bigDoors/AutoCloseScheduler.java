@@ -9,7 +9,7 @@ import java.util.Map;
 public class AutoCloseScheduler
 {
     private final BigDoors plugin;
-    private Map<Long, BukkitTask> timers;
+    private final Map<Long, BukkitTask> timers;
 
     public AutoCloseScheduler(final BigDoors plugin)
     {

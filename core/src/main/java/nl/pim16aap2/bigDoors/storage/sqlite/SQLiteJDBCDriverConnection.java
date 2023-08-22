@@ -3,11 +3,7 @@ package nl.pim16aap2.bigDoors.storage.sqlite;
 import com.google.common.io.Files;
 import nl.pim16aap2.bigDoors.BigDoors;
 import nl.pim16aap2.bigDoors.Door;
-import nl.pim16aap2.bigDoors.util.DoorDirection;
-import nl.pim16aap2.bigDoors.util.DoorOwner;
-import nl.pim16aap2.bigDoors.util.DoorType;
-import nl.pim16aap2.bigDoors.util.RotateDirection;
-import nl.pim16aap2.bigDoors.util.Util;
+import nl.pim16aap2.bigDoors.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -15,23 +11,8 @@ import org.bukkit.World;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("null") // Eclipse likes to complain about connections potentially being null,
@@ -537,33 +518,6 @@ public class SQLiteJDBCDriverConnection
      * @return The row ID in the database of the entry for the player with the provided UUID.
      * @throws SQLException When a database access error occurs.
      */
-    private long getOrInsertPlayerID(final Connection conn, final UUID playerUUID)
-        throws SQLException
-    {
-        long playerID = getPlayerID(conn, playerUUID.toString());
-        if (playerID >= 0)
-            return playerID;
-
-        final String userName = Objects.requireNonNull(Util.nameFromUUID(playerUUID), "player name cannot be null!");
-        try (PreparedStatement statement =
-                 conn.prepareStatement("INSERT INTO players (playerUUID, playerName) VALUES (?,?);",
-                                       Statement.RETURN_GENERATED_KEYS))
-        {
-            statement.setString(1, playerUUID.toString());
-            statement.setString(2, userName);
-
-            final int rowCount = statement.executeUpdate();
-            if (rowCount == 0)
-                throw new SQLException("Failed to insert user \"" + userName + "\" (" + playerUUID + ")!");
-
-            try (ResultSet generatedKeys = statement.getGeneratedKeys())
-            {
-                if (generatedKeys.next())
-                    return generatedKeys.getLong(1);
-                throw new SQLException("Failed to find generated keys when inserting new user!");
-            }
-        }
-    }
 
     // Get the permission level for a given player for a given door.
     public int getPermission(final String playerUUID, final long doorUID)
@@ -634,9 +588,7 @@ public class SQLiteJDBCDriverConnection
         return stats;
     }
 
-    // Construct a new door from a resultset.
-    private Door newDoorFromRS(final ResultSet rs, final long doorUID, final int permission, final UUID playerUUID,
-                               final String playerName, final UUID primeOwner)
+    private Door newDoorFromRS(ResultSet rs, final long doorUID, final int permission)
     {
         try
         {
@@ -647,9 +599,9 @@ public class SQLiteJDBCDriverConnection
             Location powerB = new Location(world, rs.getInt(DOOR_POWER_X), rs.getInt(DOOR_POWER_Y),
                                            rs.getInt(DOOR_POWER_Z));
 
-            Door door = new Door(playerUUID, playerName, primeOwner, world, min, max, engine, rs.getString(DOOR_NAME),
-                                 (rs.getInt(DOOR_OPEN) == 1 ? true : false), doorUID,
-                                 (rs.getInt(DOOR_LOCKED) == 1 ? true : false), permission,
+            Door door = new Door(world, min, max, engine, rs.getString(DOOR_NAME),
+                    (rs.getInt(DOOR_OPEN) == 1), doorUID,
+                    (rs.getInt(DOOR_LOCKED) == 1), permission,
                                  DoorType.valueOf(rs.getInt(DOOR_TYPE)),
                                  DoorDirection.valueOf(rs.getInt(DOOR_ENG_SIDE)), powerB,
                                  RotateDirection.valueOf(rs.getInt(DOOR_OPEN_DIR)), rs.getInt(DOOR_AUTO_CLOSE), rs.getBoolean(DOOR_NOTIFY));

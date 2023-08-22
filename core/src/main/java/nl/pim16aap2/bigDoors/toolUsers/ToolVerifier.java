@@ -22,6 +22,6 @@ public class ToolVerifier
                 is.getType() == Material.STICK                    &&
                 is.getEnchantmentLevel(Enchantment.LUCK) == 1     &&
                 is.getItemMeta().getDisplayName() != null         &&
-                is.getItemMeta().getDisplayName().toString().equals(toolName);
+                is.getItemMeta().getDisplayName().equals(toolName);
     }
 }
