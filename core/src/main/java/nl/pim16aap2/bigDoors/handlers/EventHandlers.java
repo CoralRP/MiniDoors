@@ -40,14 +40,11 @@ public class EventHandlers implements Listener
     public void onLeftClick(PlayerInteractEvent event)
     {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK)
-            if (plugin.getTF().isTool(event.getPlayer().getItemInHand()))
-            {
+            if (plugin.getTF().isTool(event.getPlayer().getItemInHand())) {
                 ToolUser tu = plugin.getToolUser(event.getPlayer());
-                if (tu != null)
-                {
+                if (tu != null) {
                     tu.selector(event.getClickedBlock().getLocation());
                     event.setCancelled(true);
-                    return;
                 }
             }
     }
