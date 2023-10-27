@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -37,8 +38,7 @@ public class EventHandlers implements Listener
 
     // Selection event.
     @EventHandler
-    public void onLeftClick(PlayerInteractEvent event)
-    {
+    public void onLeftClick(PlayerInteractEvent event) {
         if (event.getAction() == Action.LEFT_CLICK_BLOCK)
             if (plugin.getTF().isTool(event.getPlayer().getItemInHand())) {
                 ToolUser tu = plugin.getToolUser(event.getPlayer());
@@ -47,6 +47,14 @@ public class EventHandlers implements Listener
                     event.setCancelled(true);
                 }
             }
+    }
+
+    @EventHandler
+    public void onBlockBreak(BlockBreakEvent event) {
+        if (!plugin.getTF().isTool(event.getPlayer().getItemInHand())) return;
+
+        ToolUser tu = plugin.getToolUser(event.getPlayer());
+        if (tu != null) event.setCancelled(true);
     }
 
     @EventHandler
