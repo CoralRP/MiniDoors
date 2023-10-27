@@ -41,7 +41,7 @@ public class RedstoneHandler implements Listener
         if(event.getClickedBlock() == null) return;
 
         Block block = event.getClickedBlock();
-        if(block.getType().name().contains("BUTTON")) return;
+        if(!block.getType().name().contains("BUTTON")) return;
 
         Button button = (Button) block.getState().getData();
         if(button.isPowered()) return;
