@@ -19,20 +19,20 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.MultipleFacing;
 import org.bukkit.block.data.Waterlogged;
 import org.bukkit.block.data.type.Fence;
-import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_20_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R2.block.data.CraftBlockData;
 
 import java.util.Objects;
 import java.util.Set;
 
-public class NMSBlock_V1_20_R1 extends BlockBase implements NMSBlock
+public class NMSBlock_V1_20_R2 extends BlockBase implements NMSBlock
 {
     private IBlockData blockData;
     private CraftBlockData craftBlockData;
     private final XMaterial xmat;
     private Location loc;
 
-    public NMSBlock_V1_20_R1(World world, int x, int y, int z, Info blockInfo)
+    public NMSBlock_V1_20_R2(World world, int x, int y, int z, Info blockInfo)
     {
         super(blockInfo);
 
@@ -59,14 +59,14 @@ public class NMSBlock_V1_20_R1 extends BlockBase implements NMSBlock
         EnumBlockRotation rot;
         switch (rotDir)
         {
-        case CLOCKWISE:
-            rot = EnumBlockRotation.b;
-            break;
-        case COUNTERCLOCKWISE:
-            rot = EnumBlockRotation.d;
-            break;
-        default:
-            rot = EnumBlockRotation.a;
+            case CLOCKWISE:
+                rot = EnumBlockRotation.b;
+                break;
+            case COUNTERCLOCKWISE:
+                rot = EnumBlockRotation.d;
+                break;
+            default:
+                rot = EnumBlockRotation.a;
         }
         blockData = blockData.a(rot);
         updateCraftBlockData();
@@ -91,43 +91,43 @@ public class NMSBlock_V1_20_R1 extends BlockBase implements NMSBlock
             updateCraftBlockDataMultipleFacing();
 
         ((CraftWorld) Objects.requireNonNull(loc.getWorld()))
-            .getHandle().a(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), blockData, 1);
+                .getHandle().a(new BlockPosition(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), blockData, 1);
     }
 
     private void updateCraftBlockDataMultipleFacing()
     {
         final Set<BlockFace> allowedFaces = ((MultipleFacing) craftBlockData).getAllowedFaces();
         allowedFaces.forEach(
-            (blockFace) ->
-            {
-                final org.bukkit.block.Block otherBlock =
-                    loc.clone().add(blockFace.getModX(), blockFace.getModY(), blockFace.getModZ()).getBlock();
-                final org.bukkit.block.data.BlockData otherData = otherBlock.getBlockData();
-
-                if (blockFace.equals(BlockFace.UP))
-                    ((MultipleFacing) craftBlockData).setFace(blockFace, true);
-                else if (otherBlock.getType().isSolid())
+                (blockFace) ->
                 {
+                    final org.bukkit.block.Block otherBlock =
+                            loc.clone().add(blockFace.getModX(), blockFace.getModY(), blockFace.getModZ()).getBlock();
+                    final org.bukkit.block.data.BlockData otherData = otherBlock.getBlockData();
 
-                    ((MultipleFacing) craftBlockData).setFace(blockFace, true);
-
-                    final boolean isOtherMultipleFacing = otherData instanceof MultipleFacing;
-                    final boolean materialMatch = otherBlock.getType().equals(xmat.parseMaterial());
-                    final boolean areBothFence = craftBlockData instanceof Fence && otherData instanceof Fence;
-
-                    if (isOtherMultipleFacing && (materialMatch || areBothFence))
+                    if (blockFace.equals(BlockFace.UP))
+                        ((MultipleFacing) craftBlockData).setFace(blockFace, true);
+                    else if (otherBlock.getType().isSolid())
                     {
-                        final Set<BlockFace> otherAllowedFaces = ((MultipleFacing) otherData).getAllowedFaces();
-                        if (otherAllowedFaces.contains(blockFace.getOppositeFace()))
+
+                        ((MultipleFacing) craftBlockData).setFace(blockFace, true);
+
+                        final boolean isOtherMultipleFacing = otherData instanceof MultipleFacing;
+                        final boolean materialMatch = otherBlock.getType().equals(xmat.parseMaterial());
+                        final boolean areBothFence = craftBlockData instanceof Fence && otherData instanceof Fence;
+
+                        if (isOtherMultipleFacing && (materialMatch || areBothFence))
                         {
-                            ((MultipleFacing) otherData).setFace(blockFace.getOppositeFace(), true);
-                            otherBlock.setBlockData(otherData);
+                            final Set<BlockFace> otherAllowedFaces = ((MultipleFacing) otherData).getAllowedFaces();
+                            if (otherAllowedFaces.contains(blockFace.getOppositeFace()))
+                            {
+                                ((MultipleFacing) otherData).setFace(blockFace.getOppositeFace(), true);
+                                otherBlock.setBlockData(otherData);
+                            }
                         }
                     }
-                }
-                else
-                    ((MultipleFacing) craftBlockData).setFace(blockFace, false);
-            });
+                    else
+                        ((MultipleFacing) craftBlockData).setFace(blockFace, false);
+                });
         this.updateBlockData();
     }
 
@@ -145,15 +145,15 @@ public class NMSBlock_V1_20_R1 extends BlockBase implements NMSBlock
         EnumDirection.EnumAxis newAxis = axis;
         switch (axis)
         {
-        case a:
-            newAxis = ns ? EnumDirection.EnumAxis.a : EnumDirection.EnumAxis.b;
-            break;
-        case b:
-            newAxis = ns ? EnumDirection.EnumAxis.c : EnumDirection.EnumAxis.a;
-            break;
-        case c:
-            newAxis = ns ? EnumDirection.EnumAxis.b : EnumDirection.EnumAxis.c;
-            break;
+            case a:
+                newAxis = ns ? EnumDirection.EnumAxis.a : EnumDirection.EnumAxis.b;
+                break;
+            case b:
+                newAxis = ns ? EnumDirection.EnumAxis.c : EnumDirection.EnumAxis.a;
+                break;
+            case c:
+                newAxis = ns ? EnumDirection.EnumAxis.b : EnumDirection.EnumAxis.c;
+                break;
         }
         blockData = blockData.a(BlockRotatable.g, newAxis);
         this.updateCraftBlockData();

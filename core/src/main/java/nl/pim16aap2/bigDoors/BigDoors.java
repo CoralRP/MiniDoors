@@ -2,7 +2,7 @@ package nl.pim16aap2.bigDoors;
 
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R2;
 import nl.pim16aap2.bigDoors.codegeneration.FallbackGeneratorManager;
 import nl.pim16aap2.bigDoors.handlers.*;
 import nl.pim16aap2.bigDoors.moveBlocks.*;
@@ -27,7 +27,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -39,7 +38,7 @@ import java.util.logging.Level;
 public class BigDoors extends JavaPlugin implements Listener
 {
     private static BigDoors instance;
-    private int buildNumber = -1;
+    private int buildNumber = 1120;
 
     private static final String PACKAGE_VERSION = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
 
@@ -616,8 +615,8 @@ public class BigDoors extends JavaPlugin implements Listener
         }
 
         fabf = null;
-        if (version.equals("v1_20_R1")) {
-            fabf = FallingBlockFactoryProvider.getFactory();
+        if (version.equals("v1_20_R2")) {
+            fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory();
         } else {
             if (config.allowCodeGeneration())
                 fabf = FallbackGeneratorManager.getFallingBlockFactory();

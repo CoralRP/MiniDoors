@@ -1,19 +1,25 @@
 package nl.pim16aap2.bigDoors.NMS;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
-import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
-import org.bukkit.craftbukkit.v1_20_R1.block.data.CraftBlockData;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_20_R1.util.CraftMagicNumbers;
+import org.bukkit.craftbukkit.v1_20_R2.CraftServer;
+import org.bukkit.craftbukkit.v1_20_R2.block.data.CraftBlockData;
+import org.bukkit.craftbukkit.v1_20_R2.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_20_R2.util.CraftMagicNumbers;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntitySnapshot;
 import org.bukkit.entity.FallingBlock;
+import org.bukkit.entity.Player;
 import org.bukkit.util.EulerAngle;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
+import java.util.Set;
+
+public class CustomCraftFallingBlock_V1_20_R2 extends CraftEntity implements FallingBlock, CustomCraftFallingBlock
 {
-    public CustomCraftFallingBlock_V1_20_R1(final CraftServer server, final CustomEntityFallingBlock_V1_20_R1 entity)
+    public CustomCraftFallingBlock_V1_20_R2(final CraftServer server, final CustomEntityFallingBlock_V1_20_R2 entity)
     {
         super(server, entity);
         setVelocity(new Vector(0, 0, 0));
@@ -21,9 +27,9 @@ public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements Fal
     }
 
     @Override
-    public CustomEntityFallingBlock_V1_20_R1 getHandle()
+    public CustomEntityFallingBlock_V1_20_R2 getHandle()
     {
-        return (CustomEntityFallingBlock_V1_20_R1) entity;
+        return (CustomEntityFallingBlock_V1_20_R2) entity;
     }
 
     @Override
@@ -49,17 +55,47 @@ public class CustomCraftFallingBlock_V1_20_R1 extends CraftEntity implements Fal
         return true;
     }
 
+    @NotNull
+    @Override
+    public Set<Player> getTrackedBy() {
+        return Set.of();
+    }
+
+    @Override
+    public boolean isInWorld()
+    {
+        return false;
+    }
+
+    @Override
+    public EntitySnapshot createSnapshot()
+    {
+        return null;
+    }
+
+    @Override
+    public Entity copy()
+    {
+        return null;
+    }
+
+    @Override
+    public Entity copy(@NotNull Location location)
+    {
+        return null;
+    }
+
     @Override
     @Deprecated
     public @NotNull Material getMaterial()
     {
-        return CraftMagicNumbers.getMaterial(getHandle().o()).getItemType();
+        return CraftMagicNumbers.getMaterial(getHandle().t()).getItemType();
     }
 
     @Override
     public @NotNull BlockData getBlockData()
     {
-        return CraftBlockData.fromData(this.getHandle().o());
+        return CraftBlockData.fromData(this.getHandle().t());
     }
 
     @Override
