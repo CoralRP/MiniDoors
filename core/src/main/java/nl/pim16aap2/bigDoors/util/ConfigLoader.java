@@ -2,7 +2,6 @@ package nl.pim16aap2.bigDoors.util;
 
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.BigDoors.MCVersion;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -87,56 +86,15 @@ public class ConfigLoader
     public static boolean DEBUG = false;
     private final BigDoors plugin;
 
-    private static final MCVersion LATEST_RESOURCE_PACK_VERSION = MCVersion.v1_18_R1;
-    private static final EnumMap<MCVersion, String> RESOURCEPACKS = new EnumMap<>(MCVersion.class);
-    static
-    {
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/6zdkg4jr90pc1mi/BigDoorsResourcePack-1_11.zip?dl=1",
-            MCVersion.v1_11_R1, MCVersion.v1_12_R1);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/al4idl017ggpnuq/BigDoorsResourcePack-1_13.zip?dl=1",
-            MCVersion.v1_13_R1, MCVersion.v1_13_R2, MCVersion.v1_14_R1);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/6zdkg4jr90pc1mi/BigDoorsResourcePack-1_15.zip?dl=1",
-            MCVersion.v1_15_R1, MCVersion.v1_16_R1, MCVersion.v1_16_R2, MCVersion.v1_16_R3);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/frkik8qpv3jep9v/BigDoorsResourcePack-Format7.zip?dl=1",
-            MCVersion.v1_17_R1);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/4pkvrpb9kmrq590/BigDoorsResourcePack-Format8.zip?dl=1",
-            MCVersion.v1_18_R1, MCVersion.v1_18_R2);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/mrft439gckhz2cw/BigDoorsResourcePack-Format9.zip?dl=1",
-            MCVersion.v1_19_R1);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/8vpwzjkd9jnp1xu/BigDoorsResourcePack-Format12.zip?dl=1",
-            MCVersion.v1_19_R2);
-
-        populateResourcePacks(
-            RESOURCEPACKS, "https://www.dropbox.com/s/3b6ohu02ueq5no0/BigDoorsResourcePack-Format13.zip?dl=1",
-            MCVersion.v1_19_R3);
-    }
-
     public ConfigLoader(BigDoors plugin)
     {
         this.plugin = plugin;
-        resourcePack = RESOURCEPACKS.getOrDefault(BigDoors.getMCVersion(),
-                                                  RESOURCEPACKS.get(LATEST_RESOURCE_PACK_VERSION));
         configOptionsList = new ArrayList<>();
         powerBlockTypesMap = new HashSet<>();
         header = "Config file for BigDoors. Don't forget to make a backup before making changes!";
         makeConfig();
     }
 
-    // Read the current config, the make a new one based on the old one or default
-    // values, whichever is applicable.
     public void makeConfig()
     {
         String[] enableRedstoneComment = { "Allow doors to be opened using redstone signals." };
@@ -181,25 +139,6 @@ public class ConfigLoader
                                                   "Not even OPs can bypass it! Use -1 to disable this limit." };
         String[] maxAutocloseTimerComment = { "The maximum value of an autoCloseTimer (specified in ticks). ",
                                               "A value of 6000 is 5 minutes. Use a negative value to allow unlimited values. " };
-        String[] resourcePackComment = { "This plugin uses a support resource pack for things suchs as sound.",
-                                         "Different packs will be used for different versions of Minecraft:",
-                                         "The resource pack for 1.11.x/1.12.x is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_11_R1) + "'",
-                                         "The resource pack for 1.13.x/1.14.x is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_13_R1) + "'",
-                                         "The resource pack for 1.15.x/1.16.x is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_15_R1) + "'",
-                                         "The resource pack for 1.17.x is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_17_R1) + "'",
-                                         "The resource pack for 1.18.x is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_18_R1) + "'",
-                                         "The resource pack for 1.19 - 1.19.2 is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_19_R1) + "'",
-                                         "The resource pack for 1.19.3 is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_19_R2) + "'",
-                                         "The resource pack for 1.19.4 is: '"
-                                             + RESOURCEPACKS.get(MCVersion.v1_19_R3) + "'",
-                                             };
         String[] multiplierComment = { "These multipliers affect the opening/closing speed of their respective door types.",
                                        "Note that the maximum speed is limited, so beyond a certain point rasising these values won't have any effect.",
                                        "To use the default values, set them to \"0.0\" or \"1.0\" (without quotation marks).",
@@ -311,9 +250,6 @@ public class ConfigLoader
 
         maxAutoCloseTimer = config.getInt("maxAutoCloseTimer", 6000);
         configOptionsList.add(new ConfigOption("maxAutoCloseTimer", maxAutoCloseTimer, maxAutocloseTimerComment));
-
-        resourcePackEnabled = config.getBoolean("resourcePackEnabled", true);
-        configOptionsList.add(new ConfigOption("resourcePackEnabled", resourcePackEnabled, resourcePackComment));
 
         soundRange = config.getInt("soundRange", 15);
         configOptionsList.add(new ConfigOption("soundRange", soundRange, soundRangeComment));
@@ -574,12 +510,6 @@ public class ConfigLoader
         }
         ret.trimToSize();
         return Collections.unmodifiableList(ret);
-    }
-
-    private static void populateResourcePacks(EnumMap<MCVersion, String> map, String url, MCVersion... versions)
-    {
-        for (final MCVersion version : versions)
-            map.put(version, url);
     }
 
     public String dbFile()

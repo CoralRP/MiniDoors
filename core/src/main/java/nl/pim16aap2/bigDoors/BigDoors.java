@@ -67,8 +67,7 @@ public class BigDoors extends JavaPlugin implements Listener
     private AutoCloseScheduler autoCloseScheduler;
     private TimedCache<Long /* Chunk */, HashMap<Long /* Loc */, Long /* doorUID */>> pbCache = null;
     private volatile boolean schedulerIsRunning = false;
-    private static final @NotNull MCVersion MC_VERSION = BigDoors.calculateMCVersion();
-    private static final boolean IS_ON_FLATTENED_VERSION = MC_VERSION.isAtLeast(MCVersion.v1_13_R1);
+    private static final boolean IS_ON_FLATTENED_VERSION = false;
     private boolean isEnabled = false;
     private final WorldHeightManager worldHeightManager = new WorldHeightManager();
 
@@ -541,10 +540,6 @@ public class BigDoors extends JavaPlugin implements Listener
         return locale == null ? "en_US" : locale;
     }
 
-    public static MCVersion getMCVersion()
-    {
-        return MC_VERSION;
-    }
 
     private void readConfigValues()
     {
@@ -570,27 +565,6 @@ public class BigDoors extends JavaPlugin implements Listener
     public static boolean isOnFlattenedVersion()
     {
         return IS_ON_FLATTENED_VERSION;
-    }
-
-    private static @NotNull MCVersion calculateMCVersion()
-    {
-        final MCVersion[] values = MCVersion.values();
-        final MCVersion maxVersion = values[values.length - 1];
-
-        String version;
-        try
-        {
-            version = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3];
-            return MCVersion.valueOf(version);
-        }
-        catch (final ArrayIndexOutOfBoundsException | IllegalArgumentException e)
-        {
-            e.printStackTrace();
-            Bukkit.getLogger().severe("Failed to figure out the current version from input: \"" +
-                                          Bukkit.getServer().getClass().getPackage().getName() +
-                                          "\"! We'll just assume you're using version " + maxVersion);
-            return maxVersion;
-        }
     }
 
     // Check + initialize for the correct version of Minecraft.
@@ -831,54 +805,8 @@ public class BigDoors extends JavaPlugin implements Listener
         {
             Class.forName("org.bukkit.craftbukkit." + BigDoors.get().getPackageVersion() + ".legacy.CraftLegacy");
         }
-        catch (ClassNotFoundException e)
-        {
-            // ignore
+        catch (ClassNotFoundException ignored) {
         }
     }
 
-    public RedstoneHandler getRedstoneHandler()
-    {
-        return redstoneHandler;
-    }
-
-    public enum MCVersion
-    {
-        v1_8_R1,
-        v1_8_R2,
-        v1_8_R3,
-        v1_9_R1,
-        v1_9_R2,
-        v1_10_R1,
-        v1_11_R1,
-        v1_12_R1,
-        v1_13_R1,
-        v1_13_R2,
-        v1_14_R1,
-        v1_15_R1,
-        v1_16_R1,
-        v1_16_R2,
-        v1_16_R3,
-        v1_17_R1,
-        v1_18_R1,
-        v1_18_R2,
-        v1_19_R1,
-        v1_19_R2,
-        v1_19_R3,
-        v1_20_R1,
-        v1_21_R1,
-        v1_22_R1,
-        v1_23_R1,
-        v1_24_R1,
-        v1_25_R1,
-        v1_26_R1,
-        v1_27_R1,
-        v1_28_R1,
-        ;
-
-        public boolean isAtLeast(MCVersion test)
-        {
-            return ordinal() >= test.ordinal();
-        }
-    }
 }

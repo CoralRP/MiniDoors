@@ -83,27 +83,7 @@ public final class BukkitReflectionUtil
         throws NoSuchFieldException
     {
         final Field[] fields = new Field[2];
-
-        switch (BigDoors.getMCVersion())
-        {
-            case v1_19_R1:
-                // It is F&H for 1.19.0 and G&I for 1.19.1... Annoying
-                fields[0] = classPlayerConnection.getDeclaredField("F");
-                if (fields[0].getType() == int.class)
-                {
-                    fields[1] = classPlayerConnection.getDeclaredField("H");
-                }
-                else
-                {
-                    fields[0] = classPlayerConnection.getDeclaredField("G");
-                    fields[1] = classPlayerConnection.getDeclaredField("I");
-                }
-            case v1_19_R2:
-                fields[0] = classPlayerConnection.getDeclaredField("H");
-                fields[1] = classPlayerConnection.getDeclaredField("J");
-            default:
-                discoverFlyingCounters(classPlayerConnection, fields);
-        }
+        discoverFlyingCounters(classPlayerConnection, fields);
 
         for (final Field field : fields)
             field.setAccessible(true);

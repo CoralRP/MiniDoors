@@ -2,7 +2,6 @@ package nl.pim16aap2.bigDoors.GUI;
 
 import com.cryptomorin.xseries.XMaterial;
 import nl.pim16aap2.bigDoors.BigDoors;
-import nl.pim16aap2.bigDoors.BigDoors.MCVersion;
 import nl.pim16aap2.bigDoors.Door;
 import nl.pim16aap2.bigDoors.util.*;
 import org.bukkit.Bukkit;
@@ -10,7 +9,10 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class GUI
@@ -40,21 +42,10 @@ public class GUI
 
     static
     {
-        // Ugly hack. I cannot be bothered to fix this properly.
-        if (MCVersion.v1_11_R1.equals(BigDoors.getMCVersion()) || MCVersion.v1_12_R1.equals(BigDoors.getMCVersion()))
-        {
-            DOORTYPES[0] = Material.getMaterial("WOOD_DOOR"); // Door
-            DOORTYPES[1] = Material.getMaterial("TRAP_DOOR"); // DrawBridge
-            DOORTYPES[2] = Material.getMaterial("IRON_DOOR"); // Portcullis
-            DOORTYPES[3] = Material.getMaterial("PISTON_BASE"); // Sliding Door
-        }
-        else
-        {
             DOORTYPES[0] = XMaterial.JUNGLE_DOOR.parseMaterial(); // Door
             DOORTYPES[1] = XMaterial.OAK_TRAPDOOR.parseMaterial(); // DrawBridge
             DOORTYPES[2] = XMaterial.IRON_DOOR.parseMaterial(); // Portcullis
             DOORTYPES[3] = XMaterial.PISTON.parseMaterial(); // Sliding Door
-        }
     }
 
     private static final Pattern newLines = Pattern.compile("\\\n");
