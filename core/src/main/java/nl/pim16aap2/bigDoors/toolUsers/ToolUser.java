@@ -60,15 +60,17 @@ public abstract class ToolUser extends Abortable
 
     // Final cleanup and door creation.
     protected final void finishUp(Player player, String message) {
-        Location engine = new Location(
-                one.getWorld(), this.engine.getBlockX(), this.engine.getBlockY(), this.engine.getBlockZ());
-        Location powerB = new Location(
-                one.getWorld(), this.engine.getBlockX(), this.engine.getBlockY() - 1, this.engine.getBlockZ());
+        if (isReadyToCreateDoor() && !aborting) {
+            Location engine = new Location(
+                    one.getWorld(), this.engine.getBlockX(), this.engine.getBlockY(), this.engine.getBlockZ());
+            Location powerB = new Location(
+                    one.getWorld(), this.engine.getBlockX(), this.engine.getBlockY() - 1, this.engine.getBlockZ());
 
-        plugin.getCommander().addDoor(new Door(one.getWorld(), one, two, engine, name, isOpen, doorUID, false, type,
-                engineSide, powerB, openDir, -1, false));
+            plugin.getCommander().addDoor(new Door(one.getWorld(), one, two, engine, name, isOpen, doorUID, false, type,
+                    engineSide, powerB, openDir, -1, false));
 
-        Util.messagePlayer(player, message);
+            Util.messagePlayer(player, message);
+        }
 
         takeToolFromPlayer();
         this.abort();

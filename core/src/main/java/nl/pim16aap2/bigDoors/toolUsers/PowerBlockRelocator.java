@@ -38,7 +38,7 @@ public class PowerBlockRelocator extends ToolUser
                 plugin.getCommander().updatePowerBlockLoc(doorUID, one);
             Util.messagePlayer(player, messages.getString("CREATOR.PBRELOCATOR.Success"));
         }
-        finishUp(player, null);
+        finishUp(player,  null);
     }
 
     private boolean verifyDistance(Location loc)
