@@ -7,6 +7,7 @@ import nl.pim16aap2.bigDoors.util.Util;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Switch;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -43,10 +44,16 @@ public class RedstoneHandler implements Listener
         Block block = event.getClickedBlock();
         if(!block.getType().name().contains("BUTTON")) return;
 
-        Button button = (Button) block.getState().getData();
+        Switch button = (Switch) block.getBlockData();
         if(button.isPowered()) return;
 
-        Block relative = block.getRelative(button.getAttachedFace());
+        var facing = switch (button.getAttachedFace()) {
+            case FLOOR -> BlockFace.DOWN;
+            case CEILING -> BlockFace.UP;
+            case WALL -> button.getFacing().getOppositeFace();
+        };
+
+        Block relative = block.getRelative(facing);
         if(!plugin.getConfigLoader().getPowerBlockTypes().contains(relative.getType())) return;
 
         Door door = plugin.getCommander().doorFromPowerBlockLoc(relative.getLocation());

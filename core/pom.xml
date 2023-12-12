@@ -152,8 +152,8 @@
                 <version>${dependency.maven-compiler.version}</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
+                    <source>14</source>
+                    <target>14</target>
                 </configuration>
             </plugin>
 
