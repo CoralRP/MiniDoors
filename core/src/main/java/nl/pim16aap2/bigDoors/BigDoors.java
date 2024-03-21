@@ -2,7 +2,7 @@ package nl.pim16aap2.bigDoors;
 
 import nl.pim16aap2.bigDoors.GUI.GUI;
 import nl.pim16aap2.bigDoors.NMS.FallingBlockFactory;
-import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R2;
+import nl.pim16aap2.bigDoors.NMS.FallingBlockFactoryProvider_V1_20_R3;
 import nl.pim16aap2.bigDoors.codegeneration.FallbackGeneratorManager;
 import nl.pim16aap2.bigDoors.handlers.*;
 import nl.pim16aap2.bigDoors.moveBlocks.*;
@@ -589,8 +589,8 @@ public class BigDoors extends JavaPlugin implements Listener
         }
 
         fabf = null;
-        if (version.equals("v1_20_R2")) {
-            fabf = FallingBlockFactoryProvider_V1_20_R2.getFactory();
+        if (version.equals("v1_20_R3")) {
+            fabf = FallingBlockFactoryProvider_V1_20_R3.getFactory();
         } else {
             if (config.allowCodeGeneration())
                 fabf = FallbackGeneratorManager.getFallingBlockFactory();

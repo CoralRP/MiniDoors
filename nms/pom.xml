@@ -14,7 +14,7 @@
 
     <modules>
         <module>nms-api</module>
-        <module>v1_20_R1</module>
+        <module>v1_20_R3</module>
     </modules>
 
     <dependencies>

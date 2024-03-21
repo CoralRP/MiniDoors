@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>nl.pim16aap2.BigDoors</groupId>
-            <artifactId>v1_20_R2</artifactId>
+            <artifactId>v1_20_R3</artifactId>
             <version>0.1.8.47-ALPHA</version>
             <scope>compile</scope>
         </dependency>
